@@ -16,6 +16,7 @@ export type TypoProps = {
     children: any | null;
     style?: TextStyle;
     textProps?: TextProps;
+    onPress?: () => void;
 };
 
 export interface UserProps {

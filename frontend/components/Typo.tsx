@@ -11,6 +11,7 @@ const Typo = ({
     children,
     style,
     textProps = {},
+    onPress,
 }: TypoProps) => {
 
     const textStyle = [
@@ -32,6 +33,7 @@ const Typo = ({
                     },
                     style,
                 ]}
+                onPress={onPress}
                 {...textProps}
             >
                 {children}

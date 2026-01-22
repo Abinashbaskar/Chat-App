@@ -10,18 +10,16 @@ import * as Icons from 'phosphor-react-native';
 import React, { useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
 
-const Register = () => {
+const Login = () => {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
-    const nameRef = useRef("");
     const emailRef = useRef("");
     const passwordRef = useRef("");
 
     const onSubmit = async () => {
-        console.log('Name:', nameRef.current);
         console.log('Email:', emailRef.current);
         console.log('Password:', passwordRef.current);
-        // Logic will be implemented later
+        // Login logic will be implemented later
     }
 
     return (
@@ -40,16 +38,11 @@ const Register = () => {
                             showsVerticalScrollIndicator={false}
                         >
                             <View style={{ gap: spacingY._10, marginBottom: spacingY._15 }}>
-                                <Typo size={28} fontWeight={'600'} >Getting Started</Typo>
-                                <Typo size={15} color={colors.neutral600} >Create an account to continue</Typo>
+                                <Typo size={28} fontWeight={'600'} >Welcome Back</Typo>
+                                <Typo size={15} color={colors.neutral600} >Please login to continue</Typo>
                             </View>
 
                             <View style={{ gap: verticalScale(20) }}>
-                                <Input
-                                    placeholder="Enter your name"
-                                    icon={<Icons.User size={verticalScale(26)} color={colors.neutral600} weight='light' />}
-                                    onChangeText={(value) => (nameRef.current = value)}
-                                />
                                 <Input
                                     placeholder="Enter your email"
                                     icon={<Icons.At size={verticalScale(26)} color={colors.neutral600} weight='light' />}
@@ -65,16 +58,16 @@ const Register = () => {
                                 />
                                 <View style={{ marginTop: spacingY._20 }}>
                                     <Buttons loading={loading} onPress={onSubmit}>
-                                        <Typo size={20} color={colors.black} fontWeight={'bold'}>Sign Up</Typo>
+                                        <Typo size={20} color={colors.black} fontWeight={'bold'}>Login</Typo>
                                     </Buttons>
                                 </View>
                             </View>
 
                             <View style={styles.footer}>
-                                <Typo size={14} color={colors.neutral600}>Already have an account?</Typo>
+                                <Typo size={14} color={colors.neutral600}>Don't have an account?</Typo>
                                 <Typo size={14} color={colors.primaryDark} fontWeight={'700'}
-                                    onPress={() => router.navigate('/Auth/Login' as any)}
-                                > Login</Typo>
+                                    onPress={() => router.navigate('/Auth/Register' as any)}
+                                > Sign Up</Typo>
                             </View>
 
                         </ScrollView>
@@ -86,7 +79,7 @@ const Register = () => {
     );
 };
 
-export default Register;
+export default Login;
 
 const styles = StyleSheet.create({
     container: {
@@ -119,5 +112,4 @@ const styles = StyleSheet.create({
         gap: 5,
         marginTop: spacingY._10
     }
-
 });

@@ -21,7 +21,7 @@ const Welcome = () => {
 
     const handleGetStarted = () => {
         setLoading(true);
-        router.push('/Auth/Register')
+        router.push('/Auth/Login')
     };
 
     return (
