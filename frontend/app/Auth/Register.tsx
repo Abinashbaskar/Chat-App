@@ -18,10 +18,13 @@ const Register = () => {
     const passwordRef = useRef("");
 
     const onSubmit = async () => {
+        setLoading(true);
         console.log('Name:', nameRef.current);
         console.log('Email:', emailRef.current);
         console.log('Password:', passwordRef.current);
-        // Logic will be implemented later
+        // Simulate a network request
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        setLoading(false);
     }
 
     return (
@@ -41,7 +44,7 @@ const Register = () => {
                         >
                             <View style={{ gap: spacingY._10, marginBottom: spacingY._15 }}>
                                 <Typo size={28} fontWeight={'600'} >Getting Started</Typo>
-                                <Typo size={15} color={colors.neutral600} >Create an account to continue</Typo>
+                                <Typo size={15} color={colors.neutral600} >Review the conditions and sign up</Typo>
                             </View>
 
                             <View style={{ gap: verticalScale(20) }}>
@@ -63,6 +66,11 @@ const Register = () => {
                                     icon={<Icons.Lock size={verticalScale(26)} color={colors.neutral600} weight='light' />}
                                     onChangeText={(value) => (passwordRef.current = value)}
                                 />
+
+                                <Typo size={14} color={colors.neutral600} style={{ alignSelf: 'flex-end' }}>
+                                    Forgot Password?
+                                </Typo>
+
                                 <View style={{ marginTop: spacingY._20 }}>
                                     <Buttons loading={loading} onPress={onSubmit}>
                                         <Typo size={20} color={colors.black} fontWeight={'bold'}>Sign Up</Typo>
