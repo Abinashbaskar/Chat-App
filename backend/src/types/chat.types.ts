@@ -1,6 +1,6 @@
 import { Document, Types } from "mongoose";
 
-export interface Chat extends Document {
+export interface UserProps extends Document {
     email: string;
     password: string;
     name: string;
