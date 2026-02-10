@@ -10,6 +10,9 @@ import * as Icons from 'phosphor-react-native';
 import React, { useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
 
+import { register } from '@/services/authServices';
+import { Alert } from 'react-native';
+
 const Register = () => {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
@@ -18,13 +21,31 @@ const Register = () => {
     const passwordRef = useRef("");
 
     const onSubmit = async () => {
+        if (!nameRef.current || !emailRef.current || !passwordRef.current) {
+            Alert.alert("Error", "Please fill all fields");
+            return;
+        }
+
         setLoading(true);
-        console.log('Name:', nameRef.current);
-        console.log('Email:', emailRef.current);
-        console.log('Password:', passwordRef.current);
-        // Simulate a network request
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        setLoading(false);
+        console.log('--- Registration Attempt ---');
+        console.log('Path: /Auth/Register');
+        console.log('Payload Data:', {
+            name: nameRef.current,
+            email: emailRef.current,
+            password: passwordRef.current,
+        });
+
+        try {
+            const response = await register(nameRef.current, emailRef.current, passwordRef.current, null);
+            console.log('Registration successful:', response);
+            Alert.alert("Success", "Account created successfully");
+            router.navigate('/Auth/Login' as any);
+        } catch (error: any) {
+            console.log('Registration error:', error);
+            Alert.alert("Registration Failed", error);
+        } finally {
+            setLoading(false);
+        }
     }
 
     return (
