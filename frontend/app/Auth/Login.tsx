@@ -4,6 +4,8 @@ import Input from '@/components/Input';
 import ScreenWrapper from '@/components/ScreenWrapper';
 import Typo from '@/components/Typo';
 import { colors, radius, spacingX, spacingY } from '@/constants/theme';
+import { login } from '@/services/authServices';
+import { Alerts } from '@/Utils/Alerts';
 import { verticalScale } from '@/Utils/Styling';
 import { useRouter } from 'expo-router';
 import * as Icons from 'phosphor-react-native';
@@ -17,12 +19,29 @@ const Login = () => {
     const passwordRef = useRef("");
 
     const onSubmit = async () => {
+        if (!emailRef.current || !passwordRef.current) {
+            Alerts.error("Error", "Please fill all fields");
+            return;
+        }
+
         setLoading(true);
-        console.log('Email:', emailRef.current);
-        console.log('Password:', passwordRef.current);
-        // Simulate a network request
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        setLoading(false);
+        console.log('--- Login Attempt ---');
+        console.log('Payload Data:', {
+            email: emailRef.current,
+            password: passwordRef.current,
+        });
+
+        try {
+            const response = await login(emailRef.current, passwordRef.current);
+            console.log('Login successful:', response);
+            Alerts.successDialog("Login Successful", "Welcome back!");
+            router.navigate('/Main/home' as any);
+        } catch (error: any) {
+            console.log('Login error:', error);
+            Alerts.error("Login Failed", error);
+        } finally {
+            setLoading(false);
+        }
     }
 
     return (

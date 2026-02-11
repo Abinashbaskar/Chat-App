@@ -4,6 +4,7 @@ import Input from '@/components/Input';
 import ScreenWrapper from '@/components/ScreenWrapper';
 import Typo from '@/components/Typo';
 import { colors, radius, spacingX, spacingY } from '@/constants/theme';
+import { Alerts } from '@/Utils/Alerts';
 import { verticalScale } from '@/Utils/Styling';
 import { useRouter } from 'expo-router';
 import * as Icons from 'phosphor-react-native';
@@ -11,7 +12,6 @@ import React, { useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
 
 import { register } from '@/services/authServices';
-import { Alert } from 'react-native';
 
 const Register = () => {
     const router = useRouter();
@@ -22,7 +22,7 @@ const Register = () => {
 
     const onSubmit = async () => {
         if (!nameRef.current || !emailRef.current || !passwordRef.current) {
-            Alert.alert("Error", "Please fill all fields");
+            Alerts.error("Error", "Please fill all fields");
             return;
         }
 
@@ -38,11 +38,11 @@ const Register = () => {
         try {
             const response = await register(nameRef.current, emailRef.current, passwordRef.current, null);
             console.log('Registration successful:', response);
-            Alert.alert("Success", "Account created successfully");
+            Alerts.successDialog("Signup Successful", "Your account has been created!");
             router.navigate('/Auth/Login' as any);
         } catch (error: any) {
             console.log('Registration error:', error);
-            Alert.alert("Registration Failed", error);
+            Alerts.error("Registration Failed", error);
         } finally {
             setLoading(false);
         }

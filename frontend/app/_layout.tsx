@@ -1,10 +1,13 @@
 import { Stack } from 'expo-router'
 import React from 'react'
 import { StyleSheet } from 'react-native'
+import { AlertNotificationRoot } from 'react-native-alert-notification'
 
 const layout = () => {
     return (
-        <Stack screenOptions={{ headerShown: false }} />
+        <AlertNotificationRoot>
+            <Stack screenOptions={{ headerShown: false }} />
+        </AlertNotificationRoot>
     )
 }
 
