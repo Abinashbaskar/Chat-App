@@ -1,11 +1,21 @@
+import Buttons from '@/components/Buttons'
+import ScreenWrapper from '@/components/ScreenWrapper'
+import Typo from '@/components/Typo'
+import { colors } from '@/constants/theme'
+import { useAuth } from '@/context/authContext'
 import React from 'react'
-import { Text, View } from 'react-native'
 
 const home = () => {
+    const { user } = useAuth()
     return (
-        <View>
-            <Text>home</Text>
-        </View>
+        <ScreenWrapper>
+            <Typo color={colors.white}>
+                Home
+            </Typo>
+            <Buttons>
+                Logout
+            </Buttons>
+        </ScreenWrapper>
     )
 }
 

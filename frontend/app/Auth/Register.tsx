@@ -4,6 +4,7 @@ import Input from '@/components/Input';
 import ScreenWrapper from '@/components/ScreenWrapper';
 import Typo from '@/components/Typo';
 import { colors, radius, spacingX, spacingY } from '@/constants/theme';
+import { useAuth } from '@/context/authContext';
 import { Alerts } from '@/Utils/Alerts';
 import { verticalScale } from '@/Utils/Styling';
 import { useRouter } from 'expo-router';
@@ -11,9 +12,10 @@ import * as Icons from 'phosphor-react-native';
 import React, { useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
 
-import { register } from '@/services/authServices';
+
 
 const Register = () => {
+    const { signUp } = useAuth();
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const nameRef = useRef("");
@@ -36,10 +38,9 @@ const Register = () => {
         });
 
         try {
-            const response = await register(nameRef.current, emailRef.current, passwordRef.current, null);
-            console.log('Registration successful:', response);
+            await signUp(nameRef.current, emailRef.current, passwordRef.current, null);
+            console.log('Registration successful');
             Alerts.successDialog("Signup Successful", "Your account has been created!");
-            router.navigate('/Auth/Login' as any);
         } catch (error: any) {
             console.log('Registration error:', error);
             Alerts.error("Registration Failed", error);

@@ -3,7 +3,7 @@ import { AuthContextProps, DecodedTokenProps, UserProps } from "@/types";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { jwtDecode } from "jwt-decode";
-import { createContext, ReactNode, useContext, useState } from "react";
+import { createContext, ReactNode, useContext, useEffect, useState, } from "react";
 
 export const AuthContext = createContext<AuthContextProps>({
     token: null,
@@ -20,6 +20,48 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [user, setUser] = useState<UserProps | null>(null);
     const router = useRouter();
 
+    useEffect(() => {
+        loadToken();
+    }, []);
+    const loadToken = async () => {
+        const StoreToken = await AsyncStorage.getItem("token");
+        if (StoreToken) {
+            try {
+                const decodedToken = jwtDecode<DecodedTokenProps>(StoreToken);
+                if (decodedToken.exp && decodedToken.exp < Date.now() / 1000) {
+                    await AsyncStorage.removeItem('token');
+                    gotoWelcomePage();
+                    return;
+                }
+                setToken(StoreToken);
+                setUser(decodedToken.user);
+                gotoHomePage();
+            }
+            catch (error) {
+                console.log(error);
+                await AsyncStorage.removeItem("token");
+                setToken(null);
+                setUser(null);
+                gotoWelcomePage();
+            }
+        } else {
+            gotoWelcomePage();
+        }
+    }
+
+    const gotoHomePage = () => {
+        // wait is only for showing splash screen
+        setTimeout(() => {
+            router.replace("/Main/home");
+        }, 1500);
+    }
+
+    const gotoWelcomePage = () => {
+        // wait is only for showing splash screen
+        setTimeout(() => {
+            router.replace("/Auth/Welcome");
+        }, 1500);
+    }
 
     const updateToken = async (token: string) => {
         if (!token) return;

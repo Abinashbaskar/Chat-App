@@ -23,13 +23,7 @@ const index = () => {
         useNativeDriver: true,
       }),
     ]).start();
-
-    const timer = setTimeout(() => {
-      router.replace('/Auth/Welcome');
-    }, 1500);
-
-    return () => clearTimeout(timer);
-  }, [fadeAnim, scaleAnim, router]);
+  }, [fadeAnim, scaleAnim]);
 
   return (
     <View style={styles.container}>

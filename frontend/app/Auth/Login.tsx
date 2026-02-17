@@ -4,7 +4,7 @@ import Input from '@/components/Input';
 import ScreenWrapper from '@/components/ScreenWrapper';
 import Typo from '@/components/Typo';
 import { colors, radius, spacingX, spacingY } from '@/constants/theme';
-import { login } from '@/services/authServices';
+import { useAuth } from '@/context/authContext';
 import { Alerts } from '@/Utils/Alerts';
 import { verticalScale } from '@/Utils/Styling';
 import { useRouter } from 'expo-router';
@@ -13,6 +13,7 @@ import React, { useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
 
 const Login = () => {
+    const { signIn } = useAuth();
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const emailRef = useRef("");
@@ -32,10 +33,9 @@ const Login = () => {
         });
 
         try {
-            const response = await login(emailRef.current, passwordRef.current);
-            console.log('Login successful:', response);
+            await signIn(emailRef.current, passwordRef.current);
+            console.log('Login successful');
             Alerts.successDialog("Login Successful", "Welcome back!");
-            router.navigate('/Main/home' as any);
         } catch (error: any) {
             console.log('Login error:', error);
             Alerts.error("Login Failed", error);
