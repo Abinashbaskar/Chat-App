@@ -5,6 +5,8 @@ import http from 'http';
 import connectDB from './config/db.js';
 import authRoutes from './routes/auth.routes.js';
 
+import { InitializeSocket } from './socket/socket.js';
+
 dotenv.config();
 
 const app = express();
@@ -22,6 +24,9 @@ app.get('/', (req: Request, res: Response) => {
 app.use('/api/auth', authRoutes);
 
 const server = http.createServer(app);
+
+// Socket.io Initialization
+InitializeSocket(server);
 
 connectDB().then(() => {
   server.listen(PORT, () => {

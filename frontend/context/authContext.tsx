@@ -1,4 +1,5 @@
 import { login, register } from "@/services/authServices";
+import { connectSocket, disconnectSocket } from "@/socket/socket";
 import { AuthContextProps, DecodedTokenProps, UserProps } from "@/types";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
@@ -35,10 +36,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 }
                 setToken(StoreToken);
                 setUser(decodedToken.user);
+
+                // Connect socket in background without blocking navigation
+                connectSocket().catch(err => console.log("Socket background connection error:", err.message));
+
                 gotoHomePage();
             }
             catch (error) {
-                console.log(error);
+                console.log("Token loading error:", error);
                 await AsyncStorage.removeItem("token");
                 setToken(null);
                 setUser(null);
@@ -64,13 +69,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
 
     const updateToken = async (token: string) => {
-        if (!token) return;
+        console.log('--- updateToken Started ---');
+        if (!token) {
+            console.log('No token provided to updateToken');
+            return;
+        }
 
         setToken(token);
         await AsyncStorage.setItem("token", token);
 
         const decodedToken = jwtDecode<DecodedTokenProps>(token);
-        console.log(decodedToken, "decoded token");
 
         setUser(decodedToken.user);
     };
@@ -78,17 +86,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const signIn = async (email: string, password: string) => {
         const response = await login(email, password);
         await updateToken(response.token);
+
+        // Connect socket in background
+        connectSocket().catch(err => console.log("Socket connection error after sign-in:", err.message));
+
         router.replace("/Main/home");
     };
     const signUp = async (name: string, email: string, password: string, avatar: string | null) => {
         const response = await register(name, email, password, avatar);
         await updateToken(response.token);
+
+        // Connect socket in background
+        connectSocket().catch(err => console.log("Socket connection error after sign-up:", err.message));
+
         router.replace("/Main/home");
     };
     const signOut = async () => {
         setToken(null);
         setUser(null);
         await AsyncStorage.removeItem("token");
+        disconnectSocket();
         router.replace("/Auth/Welcome");
     };
     return (

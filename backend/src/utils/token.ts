@@ -4,7 +4,7 @@ import { UserProps } from "../types/chat.types.js";
 export const generateToken = (user: UserProps) => {
     const payload = {
         user: {
-            id: user._id,
+            _id: user._id,
             name: user.name,
             email: user.email,
             avatar: user.avatar,
@@ -15,7 +15,7 @@ export const generateToken = (user: UserProps) => {
         payload,
         process.env.JWT_SECRET as string,
         {
-            expiresIn: "1m",
+            expiresIn: "7d",
         }
     );
 };

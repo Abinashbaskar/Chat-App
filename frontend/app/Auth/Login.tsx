@@ -12,6 +12,7 @@ import * as Icons from 'phosphor-react-native';
 import React, { useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
 
+
 const Login = () => {
     const { signIn } = useAuth();
     const router = useRouter();
@@ -33,13 +34,16 @@ const Login = () => {
         });
 
         try {
+            console.log('Calling signIn...');
             await signIn(emailRef.current, passwordRef.current);
             console.log('Login successful');
             Alerts.successDialog("Login Successful", "Welcome back!");
         } catch (error: any) {
-            console.log('Login error:', error);
-            Alerts.error("Login Failed", error);
+            console.log('Login error details:', JSON.stringify(error, null, 2));
+            const errorMessage = typeof error === 'string' ? error : (error.message || "An unknown error occurred");
+            Alerts.errorDialog("Login Failed", errorMessage);
         } finally {
+            console.log('--- onSubmit Finished ---');
             setLoading(false);
         }
     }
