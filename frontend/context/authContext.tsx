@@ -64,14 +64,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         // wait is only for showing splash screen
         setTimeout(() => {
             router.replace("/Main/home");
-        }, 1500);
+        }, 0);
     }
 
     const gotoWelcomePage = () => {
         // wait is only for showing splash screen
         setTimeout(() => {
             router.replace("/Auth/Welcome");
-        }, 1500);
+        }, 0);
     }
 
     const updateToken = async (token: string) => {
