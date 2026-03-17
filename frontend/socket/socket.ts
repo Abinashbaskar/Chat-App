@@ -4,7 +4,6 @@ import { io, Socket } from "socket.io-client";
 let socket: Socket | null = null;
 
 export async function connectSocket(): Promise<Socket> {
-    console.log('--- connectSocket Started ---');
     const token = await AsyncStorage.getItem("token");
     if (!token) {
         console.log('connectSocket: No token found in storage');

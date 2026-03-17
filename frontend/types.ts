@@ -59,6 +59,7 @@ export type AuthContextProps = {
     ) => Promise<void>;
     signOut: () => Promise<void>;
     updateToken: (token: string) => Promise<void>;
+    initialized: boolean;
 };
 
 export type ScreenWrapperProps = {

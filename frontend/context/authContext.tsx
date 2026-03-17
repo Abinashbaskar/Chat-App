@@ -13,12 +13,14 @@ export const AuthContext = createContext<AuthContextProps>({
     signUp: async () => { },
     signOut: async () => { },
     updateToken: async () => { },
+    initialized: false,
 })
 
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [token, setToken] = useState<string | null>(null);
     const [user, setUser] = useState<UserProps | null>(null);
+    const [initialized, setInitialized] = useState(false);
     const router = useRouter();
 
     useEffect(() => {
@@ -26,6 +28,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }, []);
     const loadToken = async () => {
         const StoreToken = await AsyncStorage.getItem("token");
+        console.log(StoreToken, "ghdgh")
         if (StoreToken) {
             try {
                 const decodedToken = jwtDecode<DecodedTokenProps>(StoreToken);
@@ -48,9 +51,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 setToken(null);
                 setUser(null);
                 gotoWelcomePage();
+            } finally {
+                setInitialized(true);
             }
         } else {
             gotoWelcomePage();
+            setInitialized(true);
         }
     }
 
@@ -109,7 +115,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         router.replace("/Auth/Welcome");
     };
     return (
-        <AuthContext.Provider value={{ token, user, signIn, signUp, signOut, updateToken }}>
+        <AuthContext.Provider value={{ token, user, signIn, signUp, signOut, updateToken, initialized }}>
             {children}
         </AuthContext.Provider>
     )

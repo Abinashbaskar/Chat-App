@@ -12,11 +12,14 @@ const home = () => {
 
     }
     return (
-        <ScreenWrapper>
-            <Typo color={colors.white}>
-                Home
+        <ScreenWrapper showPattern={true}>
+            <Typo color={colors.white} size={30} fontWeight={"700"}>
+                Hello,
             </Typo>
-            <Buttons onPress={handlelogout}>
+            <Typo color={colors.primary} size={30} fontWeight={"700"}>
+                {user?.name}
+            </Typo>
+            <Buttons onPress={handlelogout} style={{ marginTop: 20 }}>
                 <Typo>Logout</Typo>
             </Buttons>
         </ScreenWrapper>

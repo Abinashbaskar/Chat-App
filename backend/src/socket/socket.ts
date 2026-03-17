@@ -8,7 +8,7 @@ let io: SocketIOServer;
 export function InitializeSocket(server: http.Server) {
     io = new SocketIOServer(server, {
         cors: {
-            origin: "*", // Allow all origins for development
+            origin: "*",
         }
     });
 
