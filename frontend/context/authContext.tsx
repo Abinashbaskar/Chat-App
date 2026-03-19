@@ -27,35 +27,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         loadToken();
     }, []);
     const loadToken = async () => {
-        const StoreToken = await AsyncStorage.getItem("token");
-        console.log(StoreToken, "ghdgh")
-        if (StoreToken) {
-            try {
+        try {
+            const StoreToken = await AsyncStorage.getItem("token");
+            console.log("Retrieved Token from Storage:", StoreToken ? "FOUND" : "NULL");
+
+            if (StoreToken) {
                 const decodedToken = jwtDecode<DecodedTokenProps>(StoreToken);
+
+                // Check for expiration
                 if (decodedToken.exp && decodedToken.exp < Date.now() / 1000) {
+                    console.log("Token expired, removing...");
                     await AsyncStorage.removeItem('token');
-                    gotoWelcomePage();
-                    return;
+                } else {
+                    setToken(StoreToken);
+                    setUser(decodedToken.user);
+                    // Connect socket in background
+                    connectSocket().catch(err => console.log("Socket background connection error:", err.message));
                 }
-                setToken(StoreToken);
-                setUser(decodedToken.user);
-
-                // Connect socket in background without blocking navigation
-                connectSocket().catch(err => console.log("Socket background connection error:", err.message));
-
-                gotoHomePage();
             }
-            catch (error) {
-                console.log("Token loading error:", error);
-                await AsyncStorage.removeItem("token");
-                setToken(null);
-                setUser(null);
-                gotoWelcomePage();
-            } finally {
-                setInitialized(true);
-            }
-        } else {
-            gotoWelcomePage();
+        } catch (error) {
+            console.log("Token loading error:", error);
+            await AsyncStorage.removeItem("token");
+            setToken(null);
+            setUser(null);
+        } finally {
             setInitialized(true);
         }
     }
@@ -81,12 +76,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             return;
         }
 
-        setToken(token);
-        await AsyncStorage.setItem("token", token);
+        try {
+            setToken(token);
+            await AsyncStorage.setItem("token", token);
+            console.log('Token saved to storage successfully');
 
-        const decodedToken = jwtDecode<DecodedTokenProps>(token);
-
-        setUser(decodedToken.user);
+            const decodedToken = jwtDecode<DecodedTokenProps>(token);
+            setUser(decodedToken.user);
+        } catch (error) {
+            console.log("Error in updateToken:", error);
+        }
     };
 
     const signIn = async (email: string, password: string) => {

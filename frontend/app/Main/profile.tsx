@@ -4,17 +4,35 @@ import ScreenWrapper from '@/components/ScreenWrapper'
 import Typo from '@/components/Typo'
 import { colors, radius, spacingX, spacingY } from '@/constants/theme'
 import { useAuth } from '@/context/authContext'
+import { UserDataProps } from '@/types'
 import { Alerts } from '@/Utils/Alerts'
 import { PencilSimple, SignOut, User } from 'phosphor-react-native'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Alert, StyleSheet, TouchableOpacity, View } from 'react-native'
 
 const profile = () => {
     const { user, signOut } = useAuth()
-    const [name, setName] = useState(user?.name || "");
+    const [userData, SetUserData] = useState<UserDataProps>({
+        name: "",
+        email: "",
+        avatar: null,
+    })
+
+    useEffect(() => {
+        SetUserData({
+            name: user?.name || "",
+            email: user?.email || "",
+            avatar: user?.avatar || ""
+        })
+    }, [user])
 
     const handleUpdate = async () => {
-        console.log("Update profile:", name);
+        let { name, avatar } = userData;
+        if (!name) {
+            Alerts.error("Error", "Please fill all the fields");
+            return;
+        }
+
     }
 
     const handleLogout = async () => {
@@ -71,8 +89,8 @@ const profile = () => {
                         <Typo size={14} color={colors.neutral700} style={{ marginLeft: spacingX._10, marginBottom: spacingY._5 }}>Name</Typo>
                         <Input
                             placeholder="Full Name"
-                            value={name}
-                            onChangeText={setName}
+                            value={userData.name}
+                            onChangeText={(text) => SetUserData({ ...userData, name: text })}
                             containerStyle={{ backgroundColor: colors.neutral100 }}
                         />
                     </View>
