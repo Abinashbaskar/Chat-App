@@ -3,7 +3,9 @@ import axios from "axios";
 
 export const login = async (email: string, password: string): Promise<{ token: string }> => {
     try {
-        const response = await axios.post(`${BASE_URL}/auth/login`, { email, password });
+        const url = `${BASE_URL}/auth/login`;
+        console.log("Login API path:", url);
+        const response = await axios.post(url, { email, password });
         return response.data;
     } catch (error: any) {
         console.log("Login failed", error);

@@ -7,6 +7,7 @@ import {
     TextStyle,
     TouchableOpacityProps,
     ViewStyle,
+    StatusBarStyle,
 } from "react-native";
 
 export type TypoProps = {
@@ -68,6 +69,7 @@ export type ScreenWrapperProps = {
     isModal?: boolean;
     showPattern?: boolean;
     bgOpacity?: number;
+    barStyle?: StatusBarStyle;
 };
 
 export type ResponseProps = {

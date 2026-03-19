@@ -23,22 +23,20 @@ const Typo = ({
         style,
     ]
     return (
-        <View>
-            <Text
-                style={[
-                    {
-                        fontSize: size,
-                        color,
-                        fontWeight,
-                    },
-                    style,
-                ]}
-                onPress={onPress}
-                {...textProps}
-            >
-                {children}
-            </Text>
-        </View>
+        <Text
+            style={[
+                {
+                    fontSize: size,
+                    color,
+                    fontWeight,
+                },
+                style,
+            ]}
+            onPress={onPress}
+            {...textProps}
+        >
+            {children}
+        </Text>
     )
 }
 

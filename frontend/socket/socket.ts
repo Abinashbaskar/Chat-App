@@ -18,17 +18,21 @@ export async function connectSocket(): Promise<Socket> {
     //Wait for connection
     await new Promise((resolve) => {
         socket?.on("connect", () => {
-            console.log("Socket connected", socket?.id);
+            console.log("✅ Socket is connected:", socket?.connected, "with id:", socket?.id);
             resolve(true);
         });
         socket?.on("connect_error", (err) => {
-            console.log("Socket connection error", err.message);
+            console.log("❌ Socket connection error, is connected:", socket?.connected, "error:", err.message);
             resolve(false);
+        });
+        socket?.on("disconnect", () => {
+            console.log("⚠️ Socket is disconnected");
         });
     });
     return socket;
 }
 export function getSocket(): Socket | null {
+    console.log("Socket connection status:", socket?.connected ? "Connected" : "Not connected");
     return socket;
 }
 

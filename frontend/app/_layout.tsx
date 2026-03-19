@@ -1,11 +1,25 @@
-import { Stack } from 'expo-router'
-import React from 'react'
+import { Stack, useRouter, useSegments } from 'expo-router'
+import React, { useEffect } from 'react'
 import { StyleSheet } from 'react-native'
-// import { AlertNotificationRoot } from 'react-native-alert-notification'
+import { AlertNotificationRoot } from 'react-native-alert-notification'
 import { AuthProvider, useAuth } from '../context/authContext'
 
 const InitialLayout = () => {
-    const { initialized } = useAuth();
+    const { initialized, token } = useAuth();
+    const router = useRouter();
+    const segments = useSegments();
+
+    useEffect(() => {
+        if (!initialized) return;
+
+        const inAuthGroup = segments[0] === 'Auth';
+
+        if (token && inAuthGroup) {
+            router.replace('/Main/home');
+        } else if (!token && !inAuthGroup) {
+            router.replace('/Auth/Welcome');
+        }
+    }, [initialized, token, segments]);
 
     if (!initialized) return null;
 
@@ -15,9 +29,9 @@ const InitialLayout = () => {
 const layout = () => {
     return (
         <AuthProvider>
-            {/* <AlertNotificationRoot> */}
-            <InitialLayout />
-            {/* </AlertNotificationRoot> */}
+            <AlertNotificationRoot>
+                <InitialLayout />
+            </AlertNotificationRoot>
         </AuthProvider>
     )
 }

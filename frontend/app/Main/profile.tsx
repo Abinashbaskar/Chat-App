@@ -1,32 +1,46 @@
-import BackButton from '@/components/BackButton'
 import Buttons from '@/components/Buttons'
 import Input from '@/components/Input'
 import ScreenWrapper from '@/components/ScreenWrapper'
 import Typo from '@/components/Typo'
 import { colors, radius, spacingX, spacingY } from '@/constants/theme'
 import { useAuth } from '@/context/authContext'
+import { Alerts } from '@/Utils/Alerts'
 import { PencilSimple, SignOut, User } from 'phosphor-react-native'
 import React, { useState } from 'react'
-import { StyleSheet, TouchableOpacity, View } from 'react-native'
+import { Alert, StyleSheet, TouchableOpacity, View } from 'react-native'
 
 const profile = () => {
     const { user, signOut } = useAuth()
     const [name, setName] = useState(user?.name || "");
 
     const handleUpdate = async () => {
-        // Implement update logic here
         console.log("Update profile:", name);
     }
 
     const handleLogout = async () => {
-        await signOut();
+        Alert.alert(
+            "Logout",
+            "Are you sure you want to logout?",
+            [
+                {
+                    text: "Cancel",
+                    style: "cancel"
+                },
+                {
+                    text: "Logout",
+                    onPress: async () => {
+                        await signOut();
+                        Alerts.success("Success", "Logout successfully");
+                    },
+                    style: "destructive"
+                }
+            ]
+        )
     }
 
     return (
-        <ScreenWrapper showPattern={false} style={{ backgroundColor: colors.white }}>
+        <ScreenWrapper showPattern={false} style={{ backgroundColor: colors.white }} barStyle="dark-content">
             <View style={styles.header}>
-                {/* Back button removed as per image, but let's center the text, wait user might need a back button. I'll include a back button on left, title on center. */}
-                <BackButton color={colors.text} style={{ position: 'absolute', left: spacingX._20, top: 0, zIndex: 10 }} />
                 <Typo size={20} fontWeight={"700"} color={colors.text}>Update Profile</Typo>
             </View>
 

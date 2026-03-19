@@ -18,6 +18,7 @@ const ScreenWrapper = ({
     showPattern = false,
     isModal = false,
     bgOpacity = 0.5,
+    barStyle = "light-content",
 }: ScreenWrapperProps) => {
     let paddingTop = Platform.OS == "ios" ? height * 0.06 : 50;
     let paddingBottom = 0;
@@ -46,7 +47,7 @@ const ScreenWrapper = ({
                     style,
                 ]}
             >
-                <StatusBar barStyle={"light-content"} translucent backgroundColor="transparent" />
+                <StatusBar barStyle={barStyle} translucent backgroundColor="transparent" />
                 {children}
             </View>
         </ImageBackground>
