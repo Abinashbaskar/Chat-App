@@ -4,6 +4,7 @@ import ScreenWrapper from '@/components/ScreenWrapper'
 import Typo from '@/components/Typo'
 import { colors, radius, spacingX, spacingY } from '@/constants/theme'
 import { useAuth } from '@/context/authContext'
+import { updateSocket } from '@/socket/socketEVents'
 import { UserDataProps } from '@/types'
 import { Alerts } from '@/Utils/Alerts'
 import { PencilSimple, SignOut, User } from 'phosphor-react-native'
@@ -11,7 +12,7 @@ import React, { useEffect, useState } from 'react'
 import { Alert, StyleSheet, TouchableOpacity, View } from 'react-native'
 
 const profile = () => {
-    const { user, signOut } = useAuth()
+    const { user, signOut, updateToken } = useAuth()
     const [userData, SetUserData] = useState<UserDataProps>({
         name: "",
         email: "",
@@ -26,6 +27,22 @@ const profile = () => {
         })
     }, [user])
 
+    useEffect(() => {
+        const handleProfileUpdate = (response: any) => {
+            if (response.success && response.token) {
+                updateToken(response.token);
+                Alerts.success("Success", response.msg || "Profile updated successfully");
+            } else if (response.success === false) {
+                Alerts.error("Error", response.msg || "Failed to update profile");
+            }
+        };
+
+        updateSocket(handleProfileUpdate);
+        return () => {
+            updateSocket(handleProfileUpdate, true);
+        };
+    }, []);
+
     const handleUpdate = async () => {
         let { name, avatar } = userData;
         if (!name) {
@@ -33,6 +50,9 @@ const profile = () => {
             return;
         }
 
+        // Emit socket event to update profile name
+        updateSocket({ name, avatar });
+        // The success message will be handled by the socket listener
     }
 
     const handleLogout = async () => {
