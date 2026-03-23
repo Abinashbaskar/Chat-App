@@ -1,11 +1,14 @@
 import { colors } from '@/constants/theme';
 import { verticalScale } from '@/Utils/Styling';
 import { useRouter } from 'expo-router';
-import React from 'react';
+import React, { useState } from 'react';
 import { Animated, StatusBar, StyleSheet, View } from 'react-native';
+import { useAuth } from '../context/authContext';
 
 const index = () => {
   const router = useRouter();
+  const { token, initialized } = useAuth();
+  const [animationFinished, setAnimationFinished] = useState(false);
   const fadeAnim = React.useRef(new Animated.Value(0)).current;
   const scaleAnim = React.useRef(new Animated.Value(0.5)).current;
 
@@ -22,8 +25,20 @@ const index = () => {
         tension: 40,
         useNativeDriver: true,
       }),
-    ]).start();
+    ]).start(() => {
+      setAnimationFinished(true);
+    });
   }, [fadeAnim, scaleAnim]);
+
+  React.useEffect(() => {
+    if (animationFinished && initialized) {
+      if (token) {
+        router.replace('/Main/home');
+      } else {
+        router.replace('/Auth/Welcome');
+      }
+    }
+  }, [animationFinished, initialized, token, router]);
 
   return (
     <View style={styles.container}>
