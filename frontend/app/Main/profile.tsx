@@ -7,12 +7,15 @@ import { useAuth } from '@/context/authContext'
 import { updateSocket } from '@/socket/socketEVents'
 import { UserDataProps } from '@/types'
 import { Alerts } from '@/Utils/Alerts'
+import * as ImagePicker from 'expo-image-picker'
+import { useRouter } from 'expo-router'
 import { PencilSimple, SignOut, User } from 'phosphor-react-native'
 import React, { useEffect, useState } from 'react'
-import { Alert, StyleSheet, TouchableOpacity, View } from 'react-native'
+import { Alert, Image, StyleSheet, TouchableOpacity, View } from 'react-native'
 
 const profile = () => {
     const { user, signOut, updateToken } = useAuth()
+    const router = useRouter()
     const [userData, SetUserData] = useState<UserDataProps>({
         name: "",
         email: "",
@@ -31,7 +34,9 @@ const profile = () => {
         const handleProfileUpdate = (response: any) => {
             if (response.success && response.token) {
                 updateToken(response.token);
+                console.log("Profile updated successfully", response);
                 Alerts.success("Success", response.msg || "Profile updated successfully");
+                router.back();
             } else if (response.success === false) {
                 Alerts.error("Error", response.msg || "Failed to update profile");
             }
@@ -54,6 +59,21 @@ const profile = () => {
         updateSocket({ name, avatar });
         // The success message will be handled by the socket listener
     }
+
+    const pickImage = async () => {
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ['images'],
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 0.5,
+            base64: true,
+        });
+
+        if (!result.canceled && result.assets && result.assets.length > 0) {
+            const base64Img = `data:image/jpeg;base64,${result.assets[0].base64}`;
+            SetUserData({ ...userData, avatar: base64Img });
+        }
+    };
 
     const handleLogout = async () => {
         Alert.alert(
@@ -86,9 +106,13 @@ const profile = () => {
                 {/* Avatar Section */}
                 <View style={styles.avatarContainer}>
                     <View style={styles.avatar}>
-                        <User size={80} color={colors.neutral400} weight="fill" />
+                        {userData.avatar ? (
+                            <Image source={{ uri: userData.avatar }} style={styles.avatarImage} />
+                        ) : (
+                            <User size={80} color={colors.neutral400} weight="fill" />
+                        )}
                     </View>
-                    <TouchableOpacity style={styles.editIcon}>
+                    <TouchableOpacity style={styles.editIcon} onPress={pickImage}>
                         <PencilSimple size={18} color={colors.text} weight="bold" />
                     </TouchableOpacity>
                 </View>
@@ -159,6 +183,11 @@ const styles = StyleSheet.create({
         backgroundColor: colors.neutral300,
         justifyContent: 'center',
         alignItems: 'center',
+        overflow: 'hidden',
+    },
+    avatarImage: {
+        width: '100%',
+        height: '100%',
     },
     editIcon: {
         position: 'absolute',
