@@ -1,16 +1,138 @@
-import Buttons from '@/components/Buttons'
+import ConversationItems from '@/components/ConversationItems'
 import ScreenWrapper from '@/components/ScreenWrapper'
 import Typo from '@/components/Typo'
 import { colors, radius, spacingX, spacingY } from '@/constants/theme'
 import { useAuth } from '@/context/authContext'
-import React from 'react'
-import { View, StyleSheet, TouchableOpacity } from 'react-native'
-import { GearSix } from 'phosphor-react-native'
 import { useRouter } from 'expo-router'
+import { GearSix } from 'phosphor-react-native'
+import React, { useState } from 'react'
+import { FlatList, StyleSheet, TouchableOpacity, View } from 'react-native'
 
 const home = () => {
     const { user } = useAuth()
     const router = useRouter()
+    const [activeTab, setActiveTab] = useState('Direct Messages')
+    const [conversations, setConversations] = useState([
+        {
+            id: 1,
+            type: "direct",
+            name: "Charlie",
+            lastMessage: {
+                text: "Thanks!",
+                createdAt: "2026-06-23T10:00:00Z"
+            }
+        },
+        {
+            id: 2,
+            type: "direct",
+            name: "Bob",
+            lastMessage: {
+                text: "Can you send the files?Can you send the files?Can you send the files?Can you send the files?",
+                createdAt: "2026-06-23T09:00:00Z"
+            }
+        },
+        {
+            id: 3,
+            type: "direct",
+            name: "Alice",
+            lastMessage: {
+                text: "Hey! Are we still on for tonight?",
+                createdAt: "2026-06-22T20:00:00Z"
+            }
+        }, {
+            id: 1,
+            type: "direct",
+            name: "Charlie",
+            lastMessage: {
+                text: "Thanks!",
+                createdAt: "2026-06-23T10:00:00Z"
+            }
+        },
+        {
+            id: 2,
+            type: "direct",
+            name: "Bob",
+            lastMessage: {
+                text: "Can you send the files?",
+                createdAt: "2026-06-23T09:00:00Z"
+            }
+        },
+        {
+            id: 3,
+            type: "direct",
+            name: "Alice",
+            lastMessage: {
+                text: "Hey! Are we still on for tonight?",
+                createdAt: "2026-06-22T20:00:00Z"
+            }
+        },
+        {
+            id: 1,
+            type: "direct",
+            name: "Charlie",
+            lastMessage: {
+                text: "Thanks!",
+                createdAt: "2026-06-23T10:00:00Z"
+            }
+        },
+        {
+            id: 2,
+            type: "direct",
+            name: "Bob",
+            lastMessage: {
+                text: "Can you send the files?",
+                createdAt: "2026-06-23T09:00:00Z"
+            }
+        },
+        {
+            id: 3,
+            type: "direct",
+            name: "Alice",
+            lastMessage: {
+                text: "Hey! Are we still on for tonight?",
+                createdAt: "2026-06-22T20:00:00Z"
+            }
+        }, {
+            id: 1,
+            type: "direct",
+            name: "Charlie",
+            lastMessage: {
+                text: "Thanks!",
+                createdAt: "2026-06-23T10:00:00Z"
+            }
+        },
+        {
+            id: 2,
+            type: "direct",
+            name: "Bob",
+            lastMessage: {
+                text: "Can you send the files?",
+                createdAt: "2026-06-23T09:00:00Z"
+            }
+        },
+        {
+            id: 3,
+            type: "direct",
+            name: "Alice",
+            lastMessage: {
+                text: "Hey! Are we still on for tonight?",
+                createdAt: "2026-06-22T20:00:00Z"
+            }
+        },
+    ])
+
+    const tabs = ['Direct Messages', 'Groups']
+
+    const currentData = conversations
+        .filter((item: any) => {
+            if (activeTab === "Direct Messages") return item.type === "direct";
+            return item.type === "group";
+        })
+        .sort((a: any, b: any) => {
+            const aDate = a?.lastMessage?.createdAt || a.createdAt;
+            const bDate = b?.lastMessage?.createdAt || b.createdAt;
+            return new Date(bDate).getTime() - new Date(aDate).getTime();
+        })
 
     return (
         <ScreenWrapper showPattern={true} style={{ paddingBottom: 0, paddingHorizontal: 0 }}>
@@ -24,7 +146,43 @@ const home = () => {
             </View>
 
             <View style={styles.content}>
-                {/* Content will live here */}
+                <View style={styles.tabsContainer}>
+                    {tabs.map((tab) => {
+                        const isActive = activeTab === tab
+                        return (
+                            <TouchableOpacity
+                                key={tab}
+                                style={[
+                                    styles.tab,
+                                    isActive && styles.activeTab
+                                ]}
+                                onPress={() => setActiveTab(tab)}
+                            >
+                                <Typo
+                                    color={isActive ? colors.neutral900 : colors.neutral500}
+                                    fontWeight={isActive ? "700" : "500"}
+                                    size={14}
+                                >
+                                    {tab}
+                                </Typo>
+                            </TouchableOpacity>
+                        )
+                    })}
+                </View>
+                <FlatList
+                    data={currentData}
+                    keyExtractor={(item, index) => item.id.toString() + index}
+                    renderItem={({ item, index }) => (
+                        <ConversationItems
+                            item={item}
+                            index={index}
+                            total={currentData.length}
+                        />
+                    )}
+                    style={styles.list}
+                    contentContainerStyle={styles.listContent}
+                    showsVerticalScrollIndicator={false}
+                />
             </View>
         </ScreenWrapper>
     )
@@ -55,5 +213,28 @@ const styles = StyleSheet.create({
         borderTopRightRadius: radius._40,
         paddingHorizontal: spacingX._20,
         paddingTop: spacingY._20,
+    },
+    tabsContainer: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: spacingX._10,
+        marginBottom: spacingY._20,
+        paddingHorizontal: spacingX._5,
+    },
+    tab: {
+        paddingHorizontal: spacingX._20,
+        paddingVertical: spacingY._10,
+        borderRadius: radius.full,
+        backgroundColor: colors.neutral100,
+    },
+    activeTab: {
+        backgroundColor: colors.primary,
+    },
+    list: {
+        flex: 1,
+        width: "100%",
+    },
+    listContent: {
+        paddingBottom: spacingY._20,
     }
 })

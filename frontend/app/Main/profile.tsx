@@ -11,7 +11,7 @@ import * as ImagePicker from 'expo-image-picker'
 import { useRouter } from 'expo-router'
 import { PencilSimple, SignOut, User } from 'phosphor-react-native'
 import React, { useEffect, useState } from 'react'
-import { Alert, Image, StyleSheet, TouchableOpacity, View } from 'react-native'
+import { Image, StyleSheet, TouchableOpacity, View } from 'react-native'
 
 const profile = () => {
     const { user, signOut, updateToken } = useAuth()
@@ -31,13 +31,23 @@ const profile = () => {
     }, [user])
 
     useEffect(() => {
-        const handleProfileUpdate = (response: any) => {
-            if (response.success && response.token) {
-                updateToken(response.token);
-                console.log("Profile updated successfully", response);
-                Alerts.success("Success", response.msg || "Profile updated successfully");
-                router.back();
+        const handleProfileUpdate = async (response: any) => {
+            console.log("Profile update response: ", response);
+            if (response.success) {
+                try {
+                    if (response.token) {
+                        await updateToken(response.token);
+                    }
+                    console.log("Profile up dated successfully", response);
+                    Alerts.success("Success", response.msg || "Profile updated successfully");
+                    setTimeout(() => {
+                        router.back();
+                    }, 500);
+                } catch (error) {
+                    console.log("Error after profile update: ", error);
+                }
             } else if (response.success === false) {
+                console.log("Profile update error: ", response);
                 Alerts.error("Error", response.msg || "Failed to update profile");
             }
         };
@@ -76,24 +86,24 @@ const profile = () => {
     };
 
     const handleLogout = async () => {
-        Alert.alert(
-            "Logout",
-            "Are you sure you want to logout?",
-            [
-                {
-                    text: "Cancel",
-                    style: "cancel"
-                },
-                {
-                    text: "Logout",
-                    onPress: async () => {
-                        await signOut();
-                        Alerts.success("Success", "Logout successfully");
-                    },
-                    style: "destructive"
-                }
-            ]
-        )
+        // Alert.alert(
+        //     "Logout",
+        //     "Are you sure you want to logout?",
+        //     [
+        //         {
+        //             text: "Cancel",
+        //             style: "cancel"
+        //         },
+        //         {
+        //             text: "Logout",
+        //             onPress: async () => {
+        await signOut();
+        // Alerts.success("Success", "Logout successfully");
+        //             },
+        //             style: "destructive"
+        //         }
+        //     ]
+        // )
     }
 
     return (
