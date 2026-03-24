@@ -31,94 +31,36 @@ const home = () => {
                 createdAt: "2026-06-23T09:00:00Z"
             }
         },
+
+
+
         {
-            id: 3,
-            type: "direct",
-            name: "Alice",
+            id: 4,
+            type: "group",
+            name: "Engineering Team",
             lastMessage: {
-                text: "Hey! Are we still on for tonight?",
-                createdAt: "2026-06-22T20:00:00Z"
-            }
-        }, {
-            id: 1,
-            type: "direct",
-            name: "Charlie",
-            lastMessage: {
-                text: "Thanks!",
-                createdAt: "2026-06-23T10:00:00Z"
+                text: "Let's review the PRs",
+                createdAt: "2026-06-24T10:00:00Z"
             }
         },
         {
-            id: 2,
-            type: "direct",
-            name: "Bob",
+            id: 5,
+            type: "group",
+            name: "Family Group",
             lastMessage: {
-                text: "Can you send the files?",
-                createdAt: "2026-06-23T09:00:00Z"
+                text: "Dinner tonight?",
+                createdAt: "2026-06-24T09:00:00Z"
             }
         },
         {
-            id: 3,
-            type: "direct",
-            name: "Alice",
+            id: 6,
+            type: "group",
+            name: "Fitness Junkies",
             lastMessage: {
-                text: "Hey! Are we still on for tonight?",
-                createdAt: "2026-06-22T20:00:00Z"
+                text: "Leg day today! 💪",
+                createdAt: "2026-06-23T18:00:00Z"
             }
-        },
-        {
-            id: 1,
-            type: "direct",
-            name: "Charlie",
-            lastMessage: {
-                text: "Thanks!",
-                createdAt: "2026-06-23T10:00:00Z"
-            }
-        },
-        {
-            id: 2,
-            type: "direct",
-            name: "Bob",
-            lastMessage: {
-                text: "Can you send the files?",
-                createdAt: "2026-06-23T09:00:00Z"
-            }
-        },
-        {
-            id: 3,
-            type: "direct",
-            name: "Alice",
-            lastMessage: {
-                text: "Hey! Are we still on for tonight?",
-                createdAt: "2026-06-22T20:00:00Z"
-            }
-        }, {
-            id: 1,
-            type: "direct",
-            name: "Charlie",
-            lastMessage: {
-                text: "Thanks!",
-                createdAt: "2026-06-23T10:00:00Z"
-            }
-        },
-        {
-            id: 2,
-            type: "direct",
-            name: "Bob",
-            lastMessage: {
-                text: "Can you send the files?",
-                createdAt: "2026-06-23T09:00:00Z"
-            }
-        },
-        {
-            id: 3,
-            type: "direct",
-            name: "Alice",
-            lastMessage: {
-                text: "Hey! Are we still on for tonight?",
-                createdAt: "2026-06-22T20:00:00Z"
-            }
-        },
+        }
     ])
 
     const tabs = ['Direct Messages', 'Groups']
@@ -171,7 +113,7 @@ const home = () => {
                 </View>
                 <FlatList
                     data={currentData}
-                    keyExtractor={(item, index) => item.id.toString() + index}
+                    keyExtractor={(item) => item.id.toString()}
                     renderItem={({ item, index }) => (
                         <ConversationItems
                             item={item}
@@ -182,6 +124,11 @@ const home = () => {
                     style={styles.list}
                     contentContainerStyle={styles.listContent}
                     showsVerticalScrollIndicator={false}
+                    keyboardShouldPersistTaps="handled"
+                    initialNumToRender={10}
+                    maxToRenderPerBatch={10}
+                    windowSize={5}
+                    removeClippedSubviews={true}
                 />
             </View>
         </ScreenWrapper>

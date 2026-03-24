@@ -1,7 +1,7 @@
 import { Stack, useRouter, useSegments } from 'expo-router'
 import React, { useEffect } from 'react'
 import { StyleSheet } from 'react-native'
-import { AlertNotificationRoot } from 'react-native-alert-notification'
+import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { AuthProvider, useAuth } from '../context/authContext'
 
 const InitialLayout = () => {
@@ -28,11 +28,13 @@ const InitialLayout = () => {
 
 const layout = () => {
     return (
-        <AuthProvider>
-            <AlertNotificationRoot>
+        <SafeAreaProvider>
+            <AuthProvider>
+                {/* <AlertNotificationRoot> */}
                 <InitialLayout />
-            </AlertNotificationRoot>
-        </AuthProvider>
+                {/* </AlertNotificationRoot> */}
+            </AuthProvider>
+        </SafeAreaProvider>
     )
 }
 

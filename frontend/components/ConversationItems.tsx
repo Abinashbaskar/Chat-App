@@ -73,10 +73,9 @@ const styles = StyleSheet.create({
     },
     content: {
         flex: 1,
-        height: "100%",
         justifyContent: "center",
-        paddingRight: spacingX._20,
-        marginLeft: spacingX._15,
+        paddingRight: spacingX._10,
+        marginLeft: spacingX._10,
         paddingVertical: spacingY._15,
         borderBottomWidth: 0.5,
         borderBottomColor: colors.neutral200,
