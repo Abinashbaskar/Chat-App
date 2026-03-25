@@ -14,7 +14,7 @@ import React, { useEffect, useState } from 'react'
 import { Image, StyleSheet, TouchableOpacity, View } from 'react-native'
 
 const profile = () => {
-    const { user, signOut, updateToken } = useAuth()
+    const { user, signOut, updateToken, updateUserData } = useAuth()
     const router = useRouter()
     const [userData, SetUserData] = useState<UserDataProps>({
         name: "",
@@ -37,6 +37,9 @@ const profile = () => {
                 try {
                     if (response.token) {
                         await updateToken(response.token);
+                    }
+                    if (response.user) {
+                        await updateUserData(response.user);
                     }
                     console.log("Profile up dated successfully", response);
                     Alerts.success("Success", response.msg || "Profile updated successfully");

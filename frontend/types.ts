@@ -60,6 +60,7 @@ export type AuthContextProps = {
     ) => Promise<void>;
     signOut: () => Promise<void>;
     updateToken: (token: string) => Promise<void>;
+    updateUserData: (user: UserProps) => Promise<void>;
     initialized: boolean;
 };
 

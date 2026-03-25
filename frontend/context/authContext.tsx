@@ -13,6 +13,7 @@ export const AuthContext = createContext<AuthContextProps>({
     signUp: async () => { },
     signOut: async () => { },
     updateToken: async () => { },
+    updateUserData: async () => { },
     initialized: false,
 })
 
@@ -38,9 +39,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 if (decodedToken.exp && decodedToken.exp < Date.now() / 1000) {
                     console.log("Token expired, removing...");
                     await AsyncStorage.removeItem('token');
+                    await AsyncStorage.removeItem('userData');
                 } else {
                     setToken(StoreToken);
-                    setUser(decodedToken.user);
+                    
+                    const savedUser = await AsyncStorage.getItem("userData");
+                    if (savedUser) {
+                        setUser(JSON.parse(savedUser));
+                    } else {
+                        setUser(decodedToken.user);
+                    }
+                    
                     // Connect socket in background
                     connectSocket().catch(err => console.log("Socket background connection error:", err.message));
                 }
@@ -48,6 +57,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         } catch (error) {
             console.log("Token loading error:", error);
             await AsyncStorage.removeItem("token");
+            await AsyncStorage.removeItem("userData");
             setToken(null);
             setUser(null);
         } finally {
@@ -69,6 +79,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }, 0);
     }
 
+    const updateUserData = async (newUser: UserProps) => {
+        try {
+            setUser(newUser);
+            await AsyncStorage.setItem("userData", JSON.stringify(newUser));
+        } catch (error) {
+            console.log("Error updating user data:", error);
+        }
+    };
+
     const updateToken = async (token: string) => {
         console.log('--- updateToken Started ---');
         if (!token) {
@@ -83,6 +102,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
             const decodedToken = jwtDecode<DecodedTokenProps>(token);
             setUser(decodedToken.user);
+            await AsyncStorage.setItem("userData", JSON.stringify(decodedToken.user));
         } catch (error) {
             console.log("Error in updateToken:", error);
         }
@@ -110,11 +130,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setToken(null);
         setUser(null);
         await AsyncStorage.removeItem("token");
+        await AsyncStorage.removeItem("userData");
         disconnectSocket();
         router.replace("/Auth/Welcome");
     };
     return (
-        <AuthContext.Provider value={{ token, user, signIn, signUp, signOut, updateToken, initialized }}>
+        <AuthContext.Provider value={{ token, user, signIn, signUp, signOut, updateToken, updateUserData, initialized }}>
             {children}
         </AuthContext.Provider>
     )
