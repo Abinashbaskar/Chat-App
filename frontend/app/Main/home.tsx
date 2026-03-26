@@ -4,7 +4,7 @@ import Typo from '@/components/Typo'
 import { colors, radius, spacingX, spacingY } from '@/constants/theme'
 import { useAuth } from '@/context/authContext'
 import { useRouter } from 'expo-router'
-import { GearSix } from 'phosphor-react-native'
+import { GearSix, Plus } from 'phosphor-react-native'
 import React, { useState } from 'react'
 import { FlatList, StyleSheet, TouchableOpacity, View } from 'react-native'
 
@@ -31,9 +31,6 @@ const home = () => {
                 createdAt: "2026-06-23T09:00:00Z"
             }
         },
-
-
-
         {
             id: 4,
             type: "group",
@@ -131,6 +128,20 @@ const home = () => {
                     removeClippedSubviews={true}
                 />
             </View>
+
+            <TouchableOpacity
+                style={styles.floatingButton}
+                activeOpacity={0.7}
+                onPress={() => {
+                    if (activeTab === 'Direct Messages') {
+                        router.push('/Main/selectUser')
+                    } else {
+                        router.push('/Main/newGroup')
+                    }
+                }}
+            >
+                <Plus size={spacingX._25} color={colors.black} weight="bold" />
+            </TouchableOpacity>
         </ScreenWrapper>
     )
 }
@@ -183,5 +194,24 @@ const styles = StyleSheet.create({
     },
     listContent: {
         paddingBottom: spacingY._20,
-    }
+    },
+    floatingButton: {
+        position: 'absolute',
+        bottom: spacingY._30,
+        right: spacingX._20,
+        width: 50,
+        height: 50,
+        borderRadius: radius.full,
+        backgroundColor: colors.primary,
+        justifyContent: 'center',
+        alignItems: 'center',
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 4,
+        },
+        shadowOpacity: 0.3,
+        shadowRadius: 4.65,
+        elevation: 8,
+    },
 })
