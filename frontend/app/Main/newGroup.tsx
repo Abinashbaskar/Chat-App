@@ -6,7 +6,7 @@ import { scale } from '@/Utils/Styling'
 import { useRouter } from 'expo-router'
 import { Camera, CaretLeft } from 'phosphor-react-native'
 import React, { useState } from 'react'
-import { FlatList, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native'
+import { FlatList, Platform, StatusBar, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native'
 
 const newGroup = () => {
     const router = useRouter()
@@ -101,6 +101,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: spacingX._20,
         paddingBottom: spacingY._20,
         backgroundColor: colors.white,
+        paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + spacingY._10 : spacingY._10,
     },
     backButton: {
         width: 40,

@@ -12,6 +12,7 @@ import { useRouter } from 'expo-router'
 import { PencilSimple, SignOut, User } from 'phosphor-react-native'
 import React, { useEffect, useState } from 'react'
 import { Image, StyleSheet, TouchableOpacity, View } from 'react-native'
+import { getFullImageUri } from '@/Utils/Common'
 
 const profile = () => {
     const { user, signOut, updateToken, updateUserData } = useAuth()
@@ -120,7 +121,7 @@ const profile = () => {
                 <View style={styles.avatarContainer}>
                     <View style={styles.avatar}>
                         {userData.avatar ? (
-                            <Image source={{ uri: userData.avatar }} style={styles.avatarImage} />
+                            <Image source={{ uri: getFullImageUri(userData.avatar) }} style={styles.avatarImage} />
                         ) : (
                             <User size={80} color={colors.neutral400} weight="fill" />
                         )}

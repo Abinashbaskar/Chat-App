@@ -4,6 +4,7 @@ import { scale } from '@/Utils/Styling'
 import { User } from 'phosphor-react-native'
 import React from 'react'
 import { Image, StyleSheet, TouchableOpacity, View } from 'react-native'
+import { getFullImageUri } from '@/Utils/Common'
 
 interface UserItemProps {
     user: any;
@@ -21,7 +22,7 @@ const UserItem = ({ user, onPress, selected, showSelection = false }: UserItemPr
             {/* Avatar section */}
             <View style={styles.avatarContainer}>
                 {image ? (
-                    <Image source={{ uri: image }} style={styles.avatar} />
+                    <Image source={{ uri: getFullImageUri(image) }} style={styles.avatar} />
                 ) : (
                     <View style={styles.avatarPlaceholder}>
                         <User size={scale(24)} color={colors.neutral500} weight="fill" />

@@ -5,7 +5,8 @@ import { colors, radius, spacingX, spacingY } from '@/constants/theme'
 import { useRouter } from 'expo-router'
 import { CaretLeft } from 'phosphor-react-native'
 import React, { useState } from 'react'
-import { FlatList, StyleSheet, TouchableOpacity, View } from 'react-native'
+import { FlatList, Platform, StyleSheet, TouchableOpacity, View } from 'react-native'
+import { StatusBar } from 'react-native'
 
 const selectUser = () => {
     const router = useRouter()
@@ -67,6 +68,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: spacingX._20,
         paddingBottom: spacingY._20,
         backgroundColor: colors.white,
+        paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + spacingY._10 : spacingY._10,
     },
     backButton: {
         width: 40,
