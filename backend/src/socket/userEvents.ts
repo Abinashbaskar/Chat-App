@@ -12,7 +12,7 @@ export function registerUserEvents(io: SocketIOServer, socket: Socket) {
         console.log("Update profile:", data);
         const userId = socket.data.userId;
         if (!userId) {
-            return socket.emit('updateprofile', {
+            return socket.emit('updateProfile', {
                 success: false,
                 msg: 'Unauthorized'
             })
@@ -40,7 +40,7 @@ export function registerUserEvents(io: SocketIOServer, socket: Socket) {
 
             const updatedUser = await User.findByIdAndUpdate(userId, { name: data.name, avatar: avatarPath }, { new: true })
             if (!updatedUser) {
-                return socket.emit('updateprofile', {
+                return socket.emit('updateProfile', {
                     success: false,
                     msg: 'User not found'
                 })
@@ -54,9 +54,42 @@ export function registerUserEvents(io: SocketIOServer, socket: Socket) {
             })
         } catch (error) {
             console.log('error updating profile', error)
-            socket.emit('updateprofile', {
+            socket.emit('updateProfile', {
                 success: false,
                 msg: 'Error Updating Profile'
+            })
+        }
+    })
+
+    socket.on("getContacts", async () => {
+        try {
+            const currentUserId = socket.data.userId;
+            if (!currentUserId) {
+                return socket.emit('getContacts', {
+                    success: false,
+                    msg: 'Unauthorized'
+                });
+            }
+            const users = await User.find({ _id: { $ne: currentUserId } },
+                { password: 0 }).lean();
+
+            const contacts = users.map((user) => ({
+                _id: user._id.toString(),
+                name: user.name,
+                email: user.email,
+                avatar: user.avatar,
+            }))
+            console.log("Contacts fetched successfully", contacts);
+            socket.emit('getContacts', {
+                success: true,
+                msg: 'Contacts fetched successfully',
+                contacts: contacts
+            });
+        } catch (error) {
+            console.log('error getting contacts', error)
+            socket.emit('getContacts', {
+                success: false,
+                msg: 'Error Getting Contacts'
             })
         }
     })

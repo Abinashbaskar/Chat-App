@@ -10,14 +10,12 @@ export interface UserProps extends Document {
 }
 
 export interface ConversationProps extends Document {
-    _id: Types.ObjectId;
-    type: "direct||group";
+    type: "personal" | "group";
     participants: Types.ObjectId[];
-    lastMessage: Types.ObjectId;
-    createdBy: Types.ObjectId;
+    lastMessage?: Types.ObjectId;
+    createdBy?: Types.ObjectId;
     name?: string;
     avatar?: string;
     createdAt: Date;
     updatedAt: Date;
-
 }
