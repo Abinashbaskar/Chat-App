@@ -4,24 +4,35 @@ import UserItem from '@/components/UserItem'
 import { colors, radius, spacingX, spacingY } from '@/constants/theme'
 import { useRouter } from 'expo-router'
 import { CaretLeft } from 'phosphor-react-native'
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import { getContacts } from '@/socket/socketEVents'
 import { FlatList, Platform, StyleSheet, TouchableOpacity, View } from 'react-native'
 import { StatusBar } from 'react-native'
 
 const selectUser = () => {
     const router = useRouter()
-    const [users, setUsers] = useState([
-        { id: 1, name: "Liam Carter", image: "https://i.pravatar.cc/150?u=1" },
-        { id: 2, name: "Emma Davis", image: "https://i.pravatar.cc/150?u=2" },
-        { id: 3, name: "Noah Wilson", image: "https://i.pravatar.cc/150?u=3" },
-        { id: 4, name: "Olivia Moore", image: "https://i.pravatar.cc/150?u=4" },
-        { id: 5, name: "James Anderson", image: "https://i.pravatar.cc/150?u=5" },
-        { id: 6, name: "Ava Thomas", image: "https://i.pravatar.cc/150?u=6" },
-        { id: 7, name: "Ethan Miller", image: "https://i.pravatar.cc/150?u=7" },
-        { id: 8, name: "Sophia Taylor", image: "https://i.pravatar.cc/150?u=8" },
-        { id: 9, name: "Benjamin Harris", image: "https://i.pravatar.cc/150?u=9" },
-        { id: 10, name: "Mia Clark", image: "https://i.pravatar.cc/150?u=10" },
-    ])
+    const [users, setUsers] = useState<any[]>([])
+
+    useEffect(() => {
+        const handleContacts = (response: any) => {
+            console.log("Contacts fetched: ", response);
+            if (response.success) {
+                const mappedUsers = response.contacts.map((c: any) => ({
+                    id: c._id,
+                    name: c.name,
+                    image: c.avatar
+                }));
+                setUsers(mappedUsers);
+            }
+        };
+
+        getContacts(handleContacts);
+        getContacts({});
+
+        return () => {
+            getContacts(handleContacts, true);
+        };
+    }, [])
 
     return (
         <ScreenWrapper showPattern={false} isModal={true} barStyle="dark-content" style={{ paddingHorizontal: 0 }}>

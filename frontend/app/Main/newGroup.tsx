@@ -5,27 +5,37 @@ import { colors, radius, spacingX, spacingY } from '@/constants/theme'
 import { scale } from '@/Utils/Styling'
 import { useRouter } from 'expo-router'
 import { Camera, CaretLeft } from 'phosphor-react-native'
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import { getContacts } from '@/socket/socketEVents'
 import { FlatList, Platform, StatusBar, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native'
 
 const newGroup = () => {
     const router = useRouter()
     const [groupName, setGroupName] = useState('')
-    const [selectedUsers, setSelectedUsers] = useState<number[]>([])
-    const [users, setUsers] = useState([
-        { id: 1, name: "Liam Carter", image: "https://i.pravatar.cc/150?u=1" },
-        { id: 2, name: "Emma Davis", image: "https://i.pravatar.cc/150?u=2" },
-        { id: 3, name: "Noah Wilson", image: "https://i.pravatar.cc/150?u=3" },
-        { id: 4, name: "Olivia Moore", image: "https://i.pravatar.cc/150?u=4" },
-        { id: 5, name: "James Anderson", image: "https://i.pravatar.cc/150?u=5" },
-        { id: 6, name: "Ava Thomas", image: "https://i.pravatar.cc/150?u=6" },
-        { id: 7, name: "Ethan Miller", image: "https://i.pravatar.cc/150?u=7" },
-        { id: 8, name: "Sophia Taylor", image: "https://i.pravatar.cc/150?u=8" },
-        { id: 9, name: "Benjamin Harris", image: "https://i.pravatar.cc/150?u=9" },
-        { id: 10, name: "Mia Clark", image: "https://i.pravatar.cc/150?u=10" },
-    ])
+    const [selectedUsers, setSelectedUsers] = useState<string[]>([])
+    const [users, setUsers] = useState<any[]>([])
 
-    const toggleUser = (id: number) => {
+    useEffect(() => {
+        const handleContacts = (response: any) => {
+            if (response.success) {
+                const mappedUsers = response.contacts.map((c: any) => ({
+                    id: c._id,
+                    name: c.name,
+                    image: c.avatar
+                }));
+                setUsers(mappedUsers);
+            }
+        };
+
+        getContacts(handleContacts);
+        getContacts({});
+
+        return () => {
+            getContacts(handleContacts, true);
+        };
+    }, [])
+
+    const toggleUser = (id: string) => {
         if (selectedUsers.includes(id)) {
             setSelectedUsers(selectedUsers.filter(u => u !== id))
         } else {
