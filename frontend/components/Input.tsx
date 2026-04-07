@@ -47,7 +47,6 @@ const styles = StyleSheet.create({
         borderWidth: 0,
         outlineStyle: 'none',
         outlineWidth: 0,
-        boxShadow: 'none',
         paddingHorizontal: 0,
     } as any
 })

@@ -4,7 +4,7 @@ import { ConversationProps } from "../types/chat.types.js";
 const ConversationSchema = new Schema<ConversationProps>({
     type: {
         type: String,
-        enum: ["personal", "group"],
+        enum: ["direct", "group"],
         required: true,
     },
     name: String,
@@ -29,4 +29,4 @@ const ConversationSchema = new Schema<ConversationProps>({
     },
 }, { timestamps: true });
 
-export default model<ConversationProps>("Conversation", ConversationSchema);
+export default model<ConversationProps>("Conversation", ConversationSchema);

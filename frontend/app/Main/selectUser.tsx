@@ -1,19 +1,20 @@
 import ScreenWrapper from '@/components/ScreenWrapper'
 import Typo from '@/components/Typo'
 import UserItem from '@/components/UserItem'
-import { colors, radius, spacingX, spacingY } from '@/constants/theme'
+import { colors, spacingX, spacingY } from '@/constants/theme'
+import { useAuth } from '@/context/authContext'
+import { getContacts, newConversation } from '@/socket/socketEVents'
 import { useRouter } from 'expo-router'
 import { CaretLeft } from 'phosphor-react-native'
-import React, { useState, useEffect } from 'react'
-import { getContacts, newConversation } from '@/socket/socketEVents'
-import { FlatList, Platform, StyleSheet, TouchableOpacity, View } from 'react-native'
-import { StatusBar } from 'react-native'
-import { useAuth } from '@/context/authContext'
+import React, { useEffect, useState } from 'react'
+import { FlatList, Platform, StatusBar, StyleSheet, TouchableOpacity, View, Alert } from 'react-native'
 
 const selectUser = () => {
     const router = useRouter()
     const { user: currentUser } = useAuth()
     const [users, setUsers] = useState<any[]>([])
+    const [isGroupMode, setIsGroupMode] = useState(false)
+    const [selectedUsers, setSelectedUsers] = useState<any[]>([])
 
     useEffect(() => {
         const handleContacts = (response: any) => {
@@ -36,17 +37,36 @@ const selectUser = () => {
         };
     }, [currentUser])
 
-    const startChat = (user: any) => {
-        if (!currentUser) return;
-        router.push({
-            pathname: '/Main/chatRoom',
-            params: {
-                userId: user.id,
-                name: user.name || '',
-                image: user.image || '',
-            }
-        });
+
+
+    const toggleParticipant = (user: any) => {
+        // Just a placeholder until group mode is fully built
+        if (selectedUsers.includes(user)) {
+            setSelectedUsers(prev => prev.filter(u => u.id !== user.id));
+        } else {
+            setSelectedUsers(prev => [...prev, user]);
+        }
     }
+
+    const onSelectUser = (user: any) => {
+        if (!currentUser) {
+            Alert.alert("Authentication", "Please login to start a conversation");
+            return;
+        }
+
+        if (isGroupMode) {
+            toggleParticipant(user);
+        } else {
+            router.push({
+                pathname: '/Main/chatRoom',
+                params: {
+                    userId: user.id || user._id,
+                    name: user.name || '',
+                    image: user.image || user.avatar || '',
+                }
+            });
+        }
+    };
 
     return (
         <ScreenWrapper showPattern={false} isModal={true} barStyle="dark-content" style={{ paddingHorizontal: 0 }}>
@@ -58,7 +78,7 @@ const selectUser = () => {
                 <Typo size={18} fontWeight="700" color={colors.neutral900}>
                     Select User
                 </Typo>
-                <View style={{ width: 40 }} /> {/* Spacer to center title */}
+                <View style={{ width: 40 }} />
             </View>
 
             {/* Content */}
@@ -69,7 +89,7 @@ const selectUser = () => {
                     renderItem={({ item }) => (
                         <UserItem
                             user={item}
-                            onPress={() => startChat(item)}
+                            onPress={() => onSelectUser(item)}
                         />
                     )}
                     showsVerticalScrollIndicator={false}

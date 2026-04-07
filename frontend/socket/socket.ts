@@ -15,10 +15,10 @@ export async function connectSocket(): Promise<Socket> {
             token
         }
     });
-    //Wait for connection
     await new Promise((resolve) => {
         socket?.on("connect", () => {
             console.log("✅ Socket is connected:", socket?.connected, "with id:", socket?.id);
+            socket?.emit("joinConversations"); // Join all conversations for realtime messages
             resolve(true);
         });
         socket?.on("connect_error", (err) => {

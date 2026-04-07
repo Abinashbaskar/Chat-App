@@ -5,60 +5,57 @@ import { colors, radius, spacingX, spacingY } from '@/constants/theme'
 import { useAuth } from '@/context/authContext'
 import { useRouter } from 'expo-router'
 import { GearSix, Plus } from 'phosphor-react-native'
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { FlatList, StyleSheet, TouchableOpacity, View } from 'react-native'
+import { getConversations } from '@/socket/socketEVents'
 
 const home = () => {
     const { user } = useAuth()
     const router = useRouter()
     const [activeTab, setActiveTab] = useState('Direct Messages')
-    const [conversations, setConversations] = useState([
-        {
-            id: 1,
-            type: "direct",
-            name: "Charlie",
-            lastMessage: {
-                text: "Thanks!",
-                createdAt: "2026-06-23T10:00:00Z"
+    const [conversations, setConversations] = useState<any[]>([])
+
+    useEffect(() => {
+        const handleConversations = (response: any) => {
+            // console.log("Conversations fetched: ", response);
+            if (response.success) {
+                // Analysis of the conversation data for the frontend
+                const parsedConversations = response.conversations.map((c: any) => {
+                    let name = c.name;
+                    let image = c.avatar;
+
+                    if (c.type === "direct") {
+                        const currentUserId = user?.id || (user as any)?._id;
+                        const otherParticipant = c.participants.find((p: any) => p._id !== currentUserId && p.id !== currentUserId);
+                        if (otherParticipant) {
+                            name = otherParticipant.name;
+                            image = otherParticipant.avatar;
+                        }
+                    }
+
+                    return {
+                        ...c,
+                        name,
+                        image,
+                        lastMessage: c.lastMessage ? {
+                            ...c.lastMessage,
+                            text: c.lastMessage.content || c.lastMessage.text || (c.lastMessage.attachment ? "Sent an attachment" : "")
+                        } : null
+                    };
+                });
+                setConversations(parsedConversations);
             }
-        },
-        {
-            id: 2,
-            type: "direct",
-            name: "Bob",
-            lastMessage: {
-                text: "Can you send the files?Can you send the files?Can you send the files?Can you send the files?",
-                createdAt: "2026-06-23T09:00:00Z"
-            }
-        },
-        {
-            id: 4,
-            type: "group",
-            name: "Engineering Team",
-            lastMessage: {
-                text: "Let's review the PRs",
-                createdAt: "2026-06-24T10:00:00Z"
-            }
-        },
-        {
-            id: 5,
-            type: "group",
-            name: "Family Group",
-            lastMessage: {
-                text: "Dinner tonight?",
-                createdAt: "2026-06-24T09:00:00Z"
-            }
-        },
-        {
-            id: 6,
-            type: "group",
-            name: "Fitness Junkies",
-            lastMessage: {
-                text: "Leg day today! 💪",
-                createdAt: "2026-06-23T18:00:00Z"
-            }
+        };
+
+        if (user) {
+            getConversations(handleConversations);
+            getConversations({}); // emit to trigger the backed logic to send
         }
-    ])
+
+        return () => {
+            getConversations(handleConversations, true);
+        };
+    }, [user])
 
     const tabs = ['Direct Messages', 'Groups']
 
@@ -110,7 +107,7 @@ const home = () => {
                 </View>
                 <FlatList
                     data={currentData}
-                    keyExtractor={(item) => item.id.toString()}
+                    keyExtractor={(item) => (item.id || item._id).toString()}
                     renderItem={({ item, index }) => (
                         <ConversationItems
                             item={item}

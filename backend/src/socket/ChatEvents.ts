@@ -35,20 +35,31 @@ export function registerChatEvents(io: SocketIOServer, socket: Socket) {
             await conversation.populate({
                 path: "participants",
                 select: "name avatar email",
+
             });
 
-            // get all connected sockets
+            // get all connected sockets for other participants
             const connectedSockets = await io.fetchSockets();
             connectedSockets.forEach((s) => {
                 const sUserId = s.data.userId?.toString();
                 if (sUserId && data.participants.includes(sUserId)) {
                     s.join(conversation._id.toString());
-                    s.emit("newConversation", {
-                        success: true,
-                        msg: "Conversation created successfully",
-                        data: conversation,
-                    });
+                    if (s.id !== socket.id) {
+                        s.emit("newConversation", {
+                            success: true,
+                            msg: "Conversation created successfully",
+                            data: conversation,
+                        });
+                    }
                 }
+            });
+
+            // guarantee the calling socket gets the successful response and joins the room
+            socket.join(conversation._id.toString());
+            socket.emit("newConversation", {
+                success: true,
+                msg: "Conversation created successfully",
+                data: conversation,
             });
 
             console.log("new conversation result:", { data: { ...conversation.toObject(), isNew: true }, success: true });

@@ -53,11 +53,21 @@ export const getContacts = (payload: any, off: boolean = false) => {
 
 export const newConversation = (payload: any, off: boolean = false) => {
     const socket = getSocket();
-    if (!socket) return;
-    if (off) socket.off("newConversation", payload);
-    else if (typeof payload == "function") socket.on("newConversation", payload);
-    else socket.emit("newConversation", payload);
+    if (!socket) {
+        console.log("Socket is not connected");
+        return;
+    }
+
+    if (off) {
+        // turn off listing to this event
+        socket.off("newConversation", payload); // payload is the callback
+    } else if (typeof payload == "function") {
+        socket.on("newConversation", payload); // payload as callback for this
+    } else {
+        socket.emit("newConversation", payload); // sending payload as data
+    }
 };
+
 
 export const getMessages = (payload: any, off: boolean = false) => {
     const socket = getSocket();
@@ -77,8 +87,17 @@ export const sendMessage = (payload: any, off: boolean = false) => {
 
 export const newMessage = (payload: any, off: boolean = false) => {
     const socket = getSocket();
+    console.log("newMessage", payload);
     if (!socket) return;
     if (off) socket.off("newMessage", payload);
     else if (typeof payload == "function") socket.on("newMessage", payload);
     else socket.emit("newMessage", payload);
+};
+
+export const getConversations = (payload: any, off: boolean = false) => {
+    const socket = getSocket();
+    if (!socket) return;
+    if (off) socket.off("getConversations", payload);
+    else if (typeof payload == "function") socket.on("getConversations", payload);
+    else socket.emit("getConversations", payload);
 };

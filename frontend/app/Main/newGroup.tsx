@@ -2,15 +2,17 @@ import ScreenWrapper from '@/components/ScreenWrapper'
 import Typo from '@/components/Typo'
 import UserItem from '@/components/UserItem'
 import { colors, radius, spacingX, spacingY } from '@/constants/theme'
+import { useAuth } from '@/context/authContext'
+import { getContacts, newConversation } from '@/socket/socketEVents'
 import { scale } from '@/Utils/Styling'
 import { useRouter } from 'expo-router'
 import { Camera, CaretLeft } from 'phosphor-react-native'
-import React, { useState, useEffect } from 'react'
-import { getContacts } from '@/socket/socketEVents'
+import React, { useEffect, useState } from 'react'
 import { FlatList, Platform, StatusBar, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native'
 
 const newGroup = () => {
     const router = useRouter()
+    const { user: currentUser } = useAuth()
     const [groupName, setGroupName] = useState('')
     const [selectedUsers, setSelectedUsers] = useState<string[]>([])
     const [users, setUsers] = useState<any[]>([])
@@ -35,12 +37,48 @@ const newGroup = () => {
         };
     }, [])
 
+    useEffect(() => {
+        const handleNewConversation = (response: any) => {
+            if (response.success && response.data) {
+                const conv = response.data;
+                console.log("handleNewConversation in newGroup received:", JSON.stringify(response));
+                // If it's the group we just asked to create, go to it
+                if (conv.type === 'group' && conv.name === groupName) {
+                    router.push({
+                        pathname: '/Main/chatRoom',
+                        params: {
+                            conversationId: conv._id,
+                            name: conv.name,
+                            image: conv.avatar || '',
+                        }
+                    });
+                }
+            }
+        };
+
+        newConversation(handleNewConversation);
+        return () => {
+            newConversation(handleNewConversation, true);
+        };
+    }, [groupName])
+
     const toggleUser = (id: string) => {
         if (selectedUsers.includes(id)) {
             setSelectedUsers(selectedUsers.filter(u => u !== id))
         } else {
             setSelectedUsers([...selectedUsers, id])
         }
+    }
+
+    const handleCreateGroup = () => {
+        if (!groupName || selectedUsers.length === 0 || !currentUser) return;
+        let currentUserId = (currentUser as any).id || (currentUser as any)._id;
+
+        newConversation({
+            type: "group",
+            name: groupName,
+            participants: [currentUserId, ...selectedUsers],
+        });
     }
 
     return (
@@ -53,7 +91,7 @@ const newGroup = () => {
                 <Typo size={18} fontWeight="700" color={colors.neutral900}>
                     New Group
                 </Typo>
-                <TouchableOpacity onPress={() => router.back()} disabled={!groupName || selectedUsers.length === 0}>
+                <TouchableOpacity onPress={handleCreateGroup} disabled={!groupName || selectedUsers.length === 0}>
                     <Typo color={(groupName && selectedUsers.length > 0) ? colors.primary : colors.neutral300} fontWeight="700">
                         Create
                     </Typo>

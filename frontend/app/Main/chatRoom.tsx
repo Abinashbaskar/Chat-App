@@ -1,14 +1,25 @@
-import { View, StyleSheet, TouchableOpacity, Image, TextInput, KeyboardAvoidingView, Platform, FlatList } from 'react-native'
-import React, { useState, useEffect, useRef } from 'react'
-import { router, useLocalSearchParams } from 'expo-router'
-import { CaretLeft, DotsThreeVertical, User, PaperPlaneRight } from 'phosphor-react-native'
-import { colors, radius, spacingX, spacingY } from '@/constants/theme'
-import { scale, verticalScale } from '@/Utils/Styling'
-import Typo from '@/components/Typo'
 import ScreenWrapper from '@/components/ScreenWrapper'
-import { getFullImageUri } from '@/Utils/Common'
+import Typo from '@/components/Typo'
+import { colors, radius, spacingX, spacingY } from '@/constants/theme'
 import { useAuth } from '@/context/authContext'
-import { getMessages, sendMessage as sendSocketMessage, newMessage, newConversation } from '@/socket/socketEVents'
+import { getMessages, newConversation, newMessage, sendMessage as sendSocketMessage } from '@/socket/socketEVents'
+import { getFullImageUri } from '@/Utils/Common'
+import { scale, verticalScale } from '@/Utils/Styling'
+import { router, useLocalSearchParams } from 'expo-router'
+import { CaretLeft, DotsThreeVertical, PaperPlaneRight, User } from 'phosphor-react-native'
+import React, { useEffect, useRef, useState } from 'react'
+import {
+    FlatList,
+    Image,
+    KeyboardAvoidingView,
+    Platform,
+    StyleSheet,
+    TextInput,
+    TouchableOpacity,
+    View
+} from 'react-native'
+// If using react-native-safe-area-context, replace the import above with:
+// import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 export default function ChatRoom() {
     const { name, image, conversationId, userId } = useLocalSearchParams()
@@ -18,13 +29,13 @@ export default function ChatRoom() {
     const [text, setText] = useState('')
     const [activeConversationId, setActiveConversationId] = useState<string | undefined>(conversationId as string)
     const flatListRef = useRef<FlatList>(null)
+    // ✅ Safe area insets for bottom padding (notch/home indicator)
+    // const insets = useSafeAreaInsets()
 
     useEffect(() => {
         const handleNewConversation = (response: any) => {
             if (response.success && response.data) {
                 const conv = response.data;
-                const myId = (currentUser as any)?.id || (currentUser as any)?._id;
-                // Verify the created/fetched conversation involves the user we clicked on
                 const isRelevant = conv.participants.some((p: any) => p._id === userId || p === userId);
                 if (isRelevant) {
                     setActiveConversationId(conv._id);
@@ -33,8 +44,7 @@ export default function ChatRoom() {
         };
 
         newConversation(handleNewConversation);
-        
-        // If we don't have a conversation ID yet (e.g. fresh navigation from selectUser)
+
         if (!activeConversationId && userId && currentUser) {
             newConversation({
                 type: "direct",
@@ -64,7 +74,7 @@ export default function ChatRoom() {
 
         getMessages(handleGetMessages);
         newMessage(handleNewMessage);
-        
+
         if (activeConversationId) {
             getMessages({ conversationId: activeConversationId });
         }
@@ -86,36 +96,47 @@ export default function ChatRoom() {
     }
 
     const renderItem = ({ item }: { item: any }) => {
-        const isMy = item.senderId?._id === (currentUser as any)?._id || item.senderId === (currentUser as any)?._id || item.senderId?.id === (currentUser as any)?.id;
-        const timeStr = item.createdAt ? new Date(item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "";
+        const isMy =
+            item.senderId?._id === (currentUser as any)?._id ||
+            item.senderId === (currentUser as any)?._id ||
+            item.senderId?.id === (currentUser as any)?.id;
+
+        const timeStr = item.createdAt
+            ? new Date(item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            : "";
         const senderName = item.senderId?.name || "Unknown";
 
         return (
-            <View style={styles.messageRow}>
-                {!isMy ? (
+            // ✅ FIX 1: Use justifyContent to push my messages to the right
+            <View style={[styles.messageRow, isMy && styles.myMessageRow]}>
+
+                {/* ✅ FIX 2: Only show avatar on OTHER user's messages, on the LEFT */}
+                {!isMy && (
                     <View style={styles.avatarContainer}>
                         <View style={styles.messageAvatarPlaceholder}>
                             {item.senderId?.avatar ? (
-                                <Image source={{ uri: getFullImageUri(item.senderId.avatar) }} style={styles.messageAvatarPlaceholder} />
+                                <Image
+                                    source={{ uri: getFullImageUri(item.senderId.avatar) }}
+                                    style={styles.messageAvatarPlaceholder}
+                                />
                             ) : (
                                 <User size={scale(16)} color={colors.neutral500} weight="fill" />
                             )}
                         </View>
                     </View>
-                ) : (
-                    <View style={styles.myMessageSpacer} />
                 )}
 
+                {/* ✅ FIX 3: Correct border radius per side */}
                 <View style={[styles.bubble, isMy ? styles.myBubble : styles.otherBubble]}>
                     {!isMy && (
-                        <Typo size={12} fontWeight={"600"} color={colors.neutral800} style={styles.senderName}>
+                        <Typo size={12} fontWeight={"600"} color={colors.primary} style={styles.senderName}>
                             {senderName}
                         </Typo>
                     )}
-                    <Typo size={14} color={colors.neutral900} style={styles.messageText}>
+                    <Typo size={14} color={isMy ? colors.white : colors.neutral900} style={styles.messageText}>
                         {item.content}
                     </Typo>
-                    <Typo size={10} color={colors.neutral500} style={styles.timeText}>
+                    <Typo size={10} color={isMy ? colors.white : colors.neutral500} style={styles.timeText}>
                         {timeStr}
                     </Typo>
                 </View>
@@ -148,9 +169,10 @@ export default function ChatRoom() {
             </View>
 
             {/* Chat Area */}
-            <KeyboardAvoidingView 
+            <KeyboardAvoidingView
                 style={styles.chatArea}
-                behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'} // ✅ FIX 4: 'height' on Android helps too
+                keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
             >
                 <FlatList
                     ref={flatListRef}
@@ -162,29 +184,31 @@ export default function ChatRoom() {
                     onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
                     onLayout={() => flatListRef.current?.scrollToEnd({ animated: true })}
                 />
-                
+
                 {/* Input Area */}
-                <View style={styles.inputContainer}>
-                    <TouchableOpacity style={styles.attachButton}>
-                        <Image 
-                            source={{ uri: 'https://picsum.photos/id/237/100' }} 
-                            style={styles.attachPreview} 
-                        />
-                    </TouchableOpacity>
+                {/* ✅ FIX 5: paddingBottom accounts for safe area on notched devices */}
+                <View style={[styles.inputContainer /* , { paddingBottom: insets.bottom || spacingY._10 } */]}>
                     <View style={styles.textInputWrapper}>
                         <TextInput
                             style={styles.textInput}
-                            placeholder="Type message"
+                            placeholder="Type message..."
                             placeholderTextColor={colors.neutral400}
                             multiline
                             value={text}
                             onChangeText={setText}
                         />
-                        {text.trim().length > 0 && (
-                            <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
-                                <PaperPlaneRight size={scale(20)} color={colors.primary} weight="fill" />
-                            </TouchableOpacity>
-                        )}
+                        {/* ✅ FIX 6: Send button always visible but dimmed when empty, for better UX */}
+                        <TouchableOpacity
+                            style={[styles.sendButton, !text.trim() && styles.sendButtonDisabled]}
+                            onPress={handleSend}
+                            disabled={!text.trim()}
+                        >
+                            <PaperPlaneRight
+                                size={scale(20)}
+                                color={text.trim() ? colors.primary : colors.neutral300}
+                                weight="fill"
+                            />
+                        </TouchableOpacity>
                     </View>
                 </View>
             </KeyboardAvoidingView>
@@ -206,12 +230,12 @@ const styles = StyleSheet.create({
         flex: 1,
         flexDirection: 'row',
         alignItems: 'center',
+        gap: spacingX._10,
     },
     headerAvatar: {
         width: scale(36),
         height: scale(36),
         borderRadius: radius.full,
-        marginRight: spacingX._10,
     },
     headerAvatarPlaceholder: {
         width: scale(36),
@@ -220,7 +244,6 @@ const styles = StyleSheet.create({
         backgroundColor: colors.neutral200,
         justifyContent: 'center',
         alignItems: 'center',
-        marginRight: spacingX._10,
     },
     moreButton: {
         marginLeft: spacingX._10,
@@ -235,91 +258,97 @@ const styles = StyleSheet.create({
     },
     listContent: {
         paddingTop: spacingY._20,
-        paddingBottom: spacingY._20,
+        paddingBottom: spacingY._10,
         paddingHorizontal: spacingX._15,
+        flexGrow: 1, // ✅ FIX 7: ensures short lists still fill the space
     },
+    // ✅ FIX 1: Base row — other user's messages align left
     messageRow: {
         flexDirection: 'row',
-        marginBottom: spacingY._15,
-        alignItems: 'flex-start',
+        marginBottom: spacingY._10,
+        alignItems: 'flex-end', // ✅ avatars sit at the bottom of tall messages
+        maxWidth: '100%',
+    },
+    // ✅ FIX 1: My messages align right
+    myMessageRow: {
+        justifyContent: 'flex-end',
     },
     avatarContainer: {
-        marginRight: spacingX._10,
+        marginRight: spacingX._5,
+        alignSelf: 'flex-end',
     },
     messageAvatarPlaceholder: {
-        width: scale(32),
-        height: scale(32),
+        width: scale(30),
+        height: scale(30),
         borderRadius: radius.full,
         backgroundColor: colors.neutral200,
         justifyContent: 'center',
         alignItems: 'center',
         overflow: 'hidden',
     },
-    myMessageSpacer: {
-        width: scale(32),
-        marginRight: spacingX._10,
-    },
     bubble: {
-        maxWidth: '85%',
-        paddingHorizontal: spacingX._15,
+        maxWidth: '75%', // ✅ slightly tighter for better readability
+        paddingHorizontal: spacingX._12,
         paddingVertical: spacingY._10,
         borderRadius: radius._15,
     },
+    // ✅ FIX 3: Other bubble — flat on top-left
     otherBubble: {
-        backgroundColor: colors.otherBubble,
+        backgroundColor: colors.neutral100,
         borderTopLeftRadius: radius._10,
     },
+    // ✅ FIX 3: My bubble — flat on top-right (not top-left!)
     myBubble: {
-        backgroundColor: colors.myBubble,
-        borderTopLeftRadius: radius._10, 
+        backgroundColor: colors.primary,
+        borderTopRightRadius: radius._10,
     },
     senderName: {
-        marginBottom: verticalScale(4),
+        marginBottom: verticalScale(2),
     },
     messageText: {
         lineHeight: verticalScale(20),
     },
     timeText: {
         alignSelf: 'flex-end',
-        marginTop: verticalScale(2),
+        marginTop: verticalScale(3),
+        opacity: 0.7,
     },
     inputContainer: {
         flexDirection: 'row',
         alignItems: 'flex-end',
         paddingHorizontal: spacingX._15,
-        paddingVertical: spacingY._10,
+        paddingTop: spacingY._10,
+        paddingBottom: spacingY._12,
         backgroundColor: colors.white,
-    },
-    attachButton: {
-        marginRight: spacingX._10,
-        marginBottom: verticalScale(2),
-    },
-    attachPreview: {
-        width: scale(36),
-        height: scale(36),
-        borderRadius: radius.full,
-        backgroundColor: colors.neutral200,
+        borderTopWidth: 1,
+        borderTopColor: colors.neutral100, // ✅ subtle separator
     },
     textInputWrapper: {
         flex: 1,
         backgroundColor: colors.neutral100,
-        borderRadius: radius.full,
+        borderRadius: radius._20,
         paddingHorizontal: spacingX._15,
+        paddingRight: spacingX._5, // ✅ tighter right to hug the send button
         flexDirection: 'row',
         alignItems: 'center',
-        minHeight: verticalScale(40),
+        minHeight: verticalScale(44),
     },
     textInput: {
         flex: 1,
         fontSize: scale(14),
         color: colors.neutral900,
         maxHeight: verticalScale(100),
-        paddingTop: Platform.OS === 'ios' ? spacingY._10 : spacingY._10,
-        paddingBottom: Platform.OS === 'ios' ? spacingY._10 : spacingY._10,
+        paddingVertical: Platform.OS === 'ios' ? spacingY._10 : spacingY._10,
     },
     sendButton: {
-        padding: scale(6),
+        width: scale(32),
+        height: scale(32),
+        borderRadius: radius.full,
         justifyContent: 'center',
         alignItems: 'center',
-    }
+        marginLeft: spacingX._5,
+    },
+    sendButtonDisabled: {
+        opacity: 0.4,
+    },
 })
