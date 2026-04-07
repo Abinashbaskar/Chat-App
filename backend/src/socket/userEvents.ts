@@ -9,7 +9,7 @@ export function registerUserEvents(io: SocketIOServer, socket: Socket) {
         socket.emit("testclient", { msg: "Hello from server", data })
     })
     socket.on("updateProfile", async (data: { name?: string, avatar?: string }) => {
-        console.log("Update profile:", data);
+        // console.log("Update profile:", data);
         const userId = socket.data.userId;
         if (!userId) {
             return socket.emit('updateProfile', {

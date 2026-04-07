@@ -50,3 +50,35 @@ export const getContacts = (payload: any, off: boolean = false) => {
         socket.emit("getContacts", payload); // sending payload as data
     }
 };
+
+export const newConversation = (payload: any, off: boolean = false) => {
+    const socket = getSocket();
+    if (!socket) return;
+    if (off) socket.off("newConversation", payload);
+    else if (typeof payload == "function") socket.on("newConversation", payload);
+    else socket.emit("newConversation", payload);
+};
+
+export const getMessages = (payload: any, off: boolean = false) => {
+    const socket = getSocket();
+    if (!socket) return;
+    if (off) socket.off("getMessages", payload);
+    else if (typeof payload == "function") socket.on("getMessages", payload);
+    else socket.emit("getMessages", payload);
+};
+
+export const sendMessage = (payload: any, off: boolean = false) => {
+    const socket = getSocket();
+    if (!socket) return;
+    if (off) socket.off("sendMessage", payload);
+    else if (typeof payload == "function") socket.on("sendMessage", payload);
+    else socket.emit("sendMessage", payload);
+};
+
+export const newMessage = (payload: any, off: boolean = false) => {
+    const socket = getSocket();
+    if (!socket) return;
+    if (off) socket.off("newMessage", payload);
+    else if (typeof payload == "function") socket.on("newMessage", payload);
+    else socket.emit("newMessage", payload);
+};

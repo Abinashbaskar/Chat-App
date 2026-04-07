@@ -5,12 +5,14 @@ import { colors, radius, spacingX, spacingY } from '@/constants/theme'
 import { useRouter } from 'expo-router'
 import { CaretLeft } from 'phosphor-react-native'
 import React, { useState, useEffect } from 'react'
-import { getContacts } from '@/socket/socketEVents'
+import { getContacts, newConversation } from '@/socket/socketEVents'
 import { FlatList, Platform, StyleSheet, TouchableOpacity, View } from 'react-native'
 import { StatusBar } from 'react-native'
+import { useAuth } from '@/context/authContext'
 
 const selectUser = () => {
     const router = useRouter()
+    const { user: currentUser } = useAuth()
     const [users, setUsers] = useState<any[]>([])
 
     useEffect(() => {
@@ -32,7 +34,19 @@ const selectUser = () => {
         return () => {
             getContacts(handleContacts, true);
         };
-    }, [])
+    }, [currentUser])
+
+    const startChat = (user: any) => {
+        if (!currentUser) return;
+        router.push({
+            pathname: '/Main/chatRoom',
+            params: {
+                userId: user.id,
+                name: user.name || '',
+                image: user.image || '',
+            }
+        });
+    }
 
     return (
         <ScreenWrapper showPattern={false} isModal={true} barStyle="dark-content" style={{ paddingHorizontal: 0 }}>
@@ -55,10 +69,7 @@ const selectUser = () => {
                     renderItem={({ item }) => (
                         <UserItem
                             user={item}
-                            onPress={() => {
-                                // For now just go back, later this would start a chat
-                                router.back()
-                            }}
+                            onPress={() => startChat(item)}
                         />
                     )}
                     showsVerticalScrollIndicator={false}

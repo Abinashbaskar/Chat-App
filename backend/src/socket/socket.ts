@@ -2,6 +2,8 @@ import { Server as SocketIOServer, Socket } from 'socket.io';
 import http from 'http';
 import jwt from 'jsonwebtoken';
 import { registerUserEvents } from './userEvents.js';
+import { registerChatEvents } from './ChatEvents.js';
+import Conversation from '../models/Conversation.js';
 
 let io: SocketIOServer;
 
@@ -38,6 +40,21 @@ export function InitializeSocket(server: http.Server) {
         const userId = socket.data.userId;
         console.log(`User connected ${userId} ${socket.data.name}`);
         registerUserEvents(io, socket);
+        registerChatEvents(io, socket);
+
+        //join all conversations of user
+        socket.on("joinConversations", async () => {
+            try {
+                const conversations = await Conversation.find({
+                    participants: { $in: [userId] },
+                });
+                conversations.forEach((conversation) => {
+                    socket.join(conversation._id.toString());
+                });
+            } catch (error) {
+                console.error("Error joining conversations:", error);
+            }
+        });
         socket.on("disconnect", () => {
             console.log(`User disconnected ${userId} ${socket.data.name}`);
         })

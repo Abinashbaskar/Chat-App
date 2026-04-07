@@ -1,20 +1,32 @@
 import Typo from '@/components/Typo'
 import { colors, radius, spacingX, spacingY } from '@/constants/theme'
+import { getFullImageUri } from '@/Utils/Common'
 import { scale } from '@/Utils/Styling'
+import { useRouter } from 'expo-router'
 import { User } from 'phosphor-react-native'
 import React from 'react'
 import { Image, StyleSheet, TouchableOpacity, View } from 'react-native'
-import { getFullImageUri } from '@/Utils/Common'
 
 const ConversationItems = ({ item, index, total }: { item: any, index: number, total: number }) => {
+    const router = useRouter();
 
     const lastMessage = item?.lastMessage?.text || "No messages yet";
     const time = item?.lastMessage?.createdAt ? new Date(item.lastMessage.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric' }) : "";
     const name = item?.name || "Unknown User";
     const image = item?.image;
+    const handlePress = () => {
+        router.push({
+            pathname: '/Main/chatRoom',
+            params: {
+                conversationId: item._id || item.id,
+                name: name,
+                image: image,
+            }
+        })
+    }
 
     return (
-        <TouchableOpacity style={styles.container} activeOpacity={0.7}>
+        <TouchableOpacity style={styles.container} activeOpacity={0.7} onPress={handlePress}>
             {/* Avatar section */}
             <View style={styles.avatarContainer}>
                 {image ? (
