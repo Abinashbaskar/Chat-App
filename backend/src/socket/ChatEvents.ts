@@ -4,7 +4,6 @@ import Message from "../models/Message.js";
 
 export function registerChatEvents(io: SocketIOServer, socket: Socket) {
     socket.on("newConversation", async (data: any) => {
-        // console.log("newConversation", data);
         try {
             if (data.type === "direct") {
                 const existingConversation = await Conversation.findOne({
@@ -13,8 +12,9 @@ export function registerChatEvents(io: SocketIOServer, socket: Socket) {
                 }).populate({
                     path: "participants",
                     select: "name avatar email",
-                });
+                }).lean();
                 if (existingConversation) {
+                    console.log("Conversation already exists, returning existing one:", existingConversation._id);
                     return socket.emit("newConversation", {
                         success: true,
                         msg: "Conversation already exists",
@@ -23,46 +23,52 @@ export function registerChatEvents(io: SocketIOServer, socket: Socket) {
                 }
             }
 
+            console.log("Attempting to create conversation with data:", {
+                type: data.type,
+                participants: data.participants,
+                createdBy: socket.data.userId,
+            });
+
             // create new conversation
             const conversation = await Conversation.create({
                 type: data.type,
                 participants: data.participants,
-                name: data.name || "", // can be empty if direct
-                avatar: data.avatar || "", // same
+                name: data.name || "", 
+                avatar: data.avatar || "", 
                 createdBy: socket.data.userId,
             });
 
-            await conversation.populate({
-                path: "participants",
-                select: "name avatar email",
+            console.log("Conversation created successfully:", conversation._id);
 
-            });
+            // await conversation.populate({
+            //     path: "participants",
+            //     select: "name avatar email",
+
+            // });
 
             // get all connected sockets for other participants
-            const connectedSockets = await io.fetchSockets();
-            connectedSockets.forEach((s) => {
-                const sUserId = s.data.userId?.toString();
-                if (sUserId && data.participants.includes(sUserId)) {
-                    s.join(conversation._id.toString());
-                    if (s.id !== socket.id) {
-                        s.emit("newConversation", {
-                            success: true,
-                            msg: "Conversation created successfully",
-                            data: conversation,
-                        });
-                    }
-                }
-            });
+            const connectedSockets = Array.from(io.sockets.sockets.values()).filter(s => data.participants.includes(s.data.userId));
+            connectedSockets.forEach((participantSocket) => {
+                participantSocket.join(conversation._id.toString());
+            })
 
-            // guarantee the calling socket gets the successful response and joins the room
-            socket.join(conversation._id.toString());
-            socket.emit("newConversation", {
+
+            //send the conversation data back populated
+            const populatedconversation = await Conversation.findById(conversation._id).populate({
+                path: "participants",
+                select: "name avatar email",
+            }).lean();
+            if (!populatedconversation) {
+                return socket.emit("newConversation", {
+                    success: false,
+                    msg: "Failed to fetch conversation",
+                });
+            }
+            io.to(conversation._id.toString()).emit("newConversation", {
                 success: true,
                 msg: "Conversation created successfully",
-                data: conversation,
+                data: populatedconversation,
             });
-
-            console.log("new conversation result:", { data: { ...conversation.toObject(), isNew: true }, success: true });
 
         } catch (error: any) {
             console.log("newConversation error: ", error);

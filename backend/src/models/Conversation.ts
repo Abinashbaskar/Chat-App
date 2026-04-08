@@ -27,6 +27,15 @@ const ConversationSchema = new Schema<ConversationProps>({
         type: String,
         default: "",
     },
+    createdAt: {
+        type: Date,
+        default: Date.now,
+    },
+    updatedAt: {
+        type: Date,
+        default: Date.now,
+    },
 }, { timestamps: true });
 
 export default model<ConversationProps>("Conversation", ConversationSchema);
+

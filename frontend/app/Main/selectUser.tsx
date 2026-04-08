@@ -7,7 +7,7 @@ import { getContacts, newConversation } from '@/socket/socketEVents'
 import { useRouter } from 'expo-router'
 import { CaretLeft } from 'phosphor-react-native'
 import React, { useEffect, useState } from 'react'
-import { FlatList, Platform, StatusBar, StyleSheet, TouchableOpacity, View, Alert } from 'react-native'
+import { Alert, FlatList, Platform, StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native'
 
 const selectUser = () => {
     const router = useRouter()
@@ -31,13 +31,45 @@ const selectUser = () => {
 
         getContacts(handleContacts);
         getContacts({});
-
+        newConversation(processsNewConversation)
         return () => {
             getContacts(handleContacts, true);
+            newConversation(processsNewConversation, true);
         };
     }, [currentUser])
 
+    const processsNewConversation = (response: any) => {
+        console.log("New conversation: ", response);
+        if (response.success && response.data) {
+            const conversation = response.data;
+            let name = conversation.name;
+            let image = conversation.avatar;
+            let otherUserId = "";
 
+            if (conversation.type === "direct") {
+                const currentUserId = currentUser?.id || (currentUser as any)?._id || (currentUser as any)?.userId;
+                const otherParticipant = conversation.participants.find((p: any) =>
+                    (p._id || p.id) !== currentUserId
+                );
+
+                if (otherParticipant) {
+                    name = otherParticipant.name;
+                    image = otherParticipant.avatar;
+                    otherUserId = otherParticipant._id || otherParticipant.id;
+                }
+            }
+
+            router.replace({
+                pathname: '/Main/chatRoom',
+                params: {
+                    conversationId: conversation._id,
+                    name: name,
+                    image: image,
+                    userId: otherUserId
+                }
+            })
+        }
+    }
 
     const toggleParticipant = (user: any) => {
         // Just a placeholder until group mode is fully built
@@ -57,14 +89,12 @@ const selectUser = () => {
         if (isGroupMode) {
             toggleParticipant(user);
         } else {
-            router.push({
-                pathname: '/Main/chatRoom',
-                params: {
-                    userId: user.id || user._id,
-                    name: user.name || '',
-                    image: user.image || user.avatar || '',
-                }
+            newConversation({
+                type: "direct",
+                participants: [currentUser.id, user.id],
             });
+            console.log("New conversation: ", user);
+
         }
     };
 

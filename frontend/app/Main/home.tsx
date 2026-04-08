@@ -5,9 +5,9 @@ import { colors, radius, spacingX, spacingY } from '@/constants/theme'
 import { useAuth } from '@/context/authContext'
 import { useRouter } from 'expo-router'
 import { GearSix, Plus } from 'phosphor-react-native'
-import React, { useState, useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { FlatList, StyleSheet, TouchableOpacity, View } from 'react-native'
-import { getConversations } from '@/socket/socketEVents'
+// import { getConversations } from '@/socket/socketEVents'
 
 const home = () => {
     const { user } = useAuth()
@@ -48,12 +48,12 @@ const home = () => {
         };
 
         if (user) {
-            getConversations(handleConversations);
-            getConversations({}); // emit to trigger the backed logic to send
+            // getConversations(handleConversations);
+            // getConversations({}); // emit to trigger the backed logic to send
         }
 
         return () => {
-            getConversations(handleConversations, true);
+            // getConversations(handleConversations, true);
         };
     }, [user])
 

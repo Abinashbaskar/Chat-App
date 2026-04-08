@@ -9,7 +9,6 @@ export function registerUserEvents(io: SocketIOServer, socket: Socket) {
         socket.emit("testclient", { msg: "Hello from server", data })
     })
     socket.on("updateProfile", async (data: { name?: string, avatar?: string }) => {
-        // console.log("Update profile:", data);
         const userId = socket.data.userId;
         if (!userId) {
             return socket.emit('updateProfile', {
@@ -19,8 +18,6 @@ export function registerUserEvents(io: SocketIOServer, socket: Socket) {
         }
         try {
             let avatarPath = data.avatar;
-
-            // Handle base64 avatar upload
             if (data.avatar && data.avatar.startsWith("data:image")) {
                 const base64Data = data.avatar.split(";base64,").pop();
                 if (base64Data) {
@@ -79,10 +76,9 @@ export function registerUserEvents(io: SocketIOServer, socket: Socket) {
                 email: user.email,
                 avatar: user.avatar,
             }))
-            console.log("Contacts fetched successfully", contacts);
             socket.emit('getContacts', {
                 success: true,
-                msg: 'Contacts fetched successfully',
+                msg: 'Contacts fetched successully',
                 contacts: contacts
             });
         } catch (error) {

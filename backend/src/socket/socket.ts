@@ -46,8 +46,8 @@ export function InitializeSocket(server: http.Server) {
         socket.on("joinConversations", async () => {
             try {
                 const conversations = await Conversation.find({
-                    participants: { $in: [userId] },
-                });
+                    participants: userId,
+                }).select("_id").lean();
                 conversations.forEach((conversation) => {
                     socket.join(conversation._id.toString());
                 });
