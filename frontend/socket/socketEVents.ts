@@ -51,23 +51,34 @@ export const getContacts = (payload: any, off: boolean = false) => {
     }
 };
 
-export const newConversation = (payload: any, off: boolean = false) => {
+// ✅ LISTEN
+export const onNewConversation = (callback: any) => {
+    const socket = getSocket();
+    if (!socket) return;
+
+    socket.on("newConversation", callback);
+};
+
+// ✅ REMOVE LISTENER
+export const offNewConversation = (callback: any) => {
+    const socket = getSocket();
+    if (!socket) return;
+
+    socket.off("newConversation", callback);
+};
+
+// ✅ EMIT
+export const emitNewConversation = (data: any) => {
     const socket = getSocket();
     if (!socket) {
-        console.log("Socket is not connected");
+        console.log("Socket not connected");
         return;
     }
 
-    if (off) {
-        // turn off listing to this event
-        socket.off("newConversation", payload); // payload is the callback
-    } else if (typeof payload == "function") {
-        socket.on("newConversation", payload); // payload as callback for this
-    } else {
-        socket.emit("newConversation", payload); // sending payload as data
-    }
-};
+    console.log("📤 Emitting:", data); // 🔥 IMPORTANT
 
+    socket.emit("newConversation", data);
+};
 
 
 // export const getMessages = (payload: any, off: boolean = false) => {

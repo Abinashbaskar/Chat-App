@@ -3,7 +3,8 @@ import Typo from '@/components/Typo'
 import UserItem from '@/components/UserItem'
 import { colors, spacingX, spacingY } from '@/constants/theme'
 import { useAuth } from '@/context/authContext'
-import { getContacts, newConversation } from '@/socket/socketEVents'
+import { getSocket } from '@/socket/socket'
+import { emitNewConversation, getContacts, offNewConversation, onNewConversation } from '@/socket/socketEVents'
 import { useRouter } from 'expo-router'
 import { CaretLeft } from 'phosphor-react-native'
 import React, { useEffect, useState } from 'react'
@@ -29,14 +30,16 @@ const selectUser = () => {
             }
         };
 
-        getContacts(handleContacts);
-        getContacts({});
-        newConversation(processsNewConversation)
+        // ✅ Register listener FIRST, then emit to request contacts
+        getContacts(handleContacts);        // registers the "on" listener
+        getContacts({});                    // emits to trigger server response (empty payload is fine)
+        onNewConversation(processsNewConversation);
+
         return () => {
-            getContacts(handleContacts, true);
-            newConversation(processsNewConversation, true);
+            getContacts(handleContacts, true);  // ✅ cleanup listener
+            offNewConversation(processsNewConversation);
         };
-    }, [currentUser])
+    }, [currentUser]);
 
     const processsNewConversation = (response: any) => {
         console.log("New conversation: ", response);
@@ -86,16 +89,20 @@ const selectUser = () => {
             return;
         }
 
-        if (isGroupMode) {
-            toggleParticipant(user);
-        } else {
-            newConversation({
-                type: "direct",
-                participants: [currentUser.id, user.id],
-            });
-            console.log("New conversation: ", user);
+        const senderId = (currentUser as any)?._id || (currentUser as any)?.id;
+        const receiverId = user?.id;
 
-        }
+        console.log("Sending participants:", senderId, receiverId);
+
+        // ✅ Add this debug
+        const socket = getSocket();
+        console.log("Socket ID:", socket?.id);
+        console.log("Socket connected:", socket?.connected);
+
+        emitNewConversation({
+            type: "direct",
+            participants: [senderId, receiverId],
+        });
     };
 
     return (

@@ -1,20 +1,35 @@
 import { Socket, Server as SocketIOServer } from "socket.io";
 import Conversation from "../models/Conversation.js";
 import Message from "../models/Message.js";
+import { Types } from "mongoose";
 
 export function registerChatEvents(io: SocketIOServer, socket: Socket) {
     socket.on("newConversation", async (data: any) => {
         try {
+            console.log("🔥 EVENT RECEIVED:", data);
+            console.log("👤 socket.data.userId:", socket.data.userId);
+
+            if (!socket.data.userId) {
+                return socket.emit("newConversation", {
+                    success: false,
+                    msg: "Unauthorized",
+                });
+            }
+
+            // ✅ Cast all participant IDs to ObjectId
+            const participantIds = data.participants.map((id: string) => new Types.ObjectId(id));
+
             if (data.type === "direct") {
                 const existingConversation = await Conversation.findOne({
                     type: "direct",
-                    participants: { $all: data.participants, $size: 2 },
+                    participants: { $all: participantIds, $size: 2 },
                 }).populate({
                     path: "participants",
                     select: "name avatar email",
                 }).lean();
+
                 if (existingConversation) {
-                    console.log("Conversation already exists, returning existing one:", existingConversation._id);
+                    console.log("Conversation already exists:", existingConversation._id);
                     return socket.emit("newConversation", {
                         success: true,
                         msg: "Conversation already exists",
@@ -23,58 +38,47 @@ export function registerChatEvents(io: SocketIOServer, socket: Socket) {
                 }
             }
 
-            console.log("Attempting to create conversation with data:", {
-                type: data.type,
-                participants: data.participants,
-                createdBy: socket.data.userId,
-            });
-
-            // create new conversation
             const conversation = await Conversation.create({
                 type: data.type,
-                participants: data.participants,
-                name: data.name || "", 
-                avatar: data.avatar || "", 
-                createdBy: socket.data.userId,
+                participants: participantIds, // ✅ use cast IDs
+                name: data.name || "",
+                avatar: data.avatar || "",
+                createdBy: new Types.ObjectId(socket.data.userId), // ✅ cast this too
             });
 
-            console.log("Conversation created successfully:", conversation._id);
+            console.log("✅ Conversation created:", conversation._id);
 
-            // await conversation.populate({
-            //     path: "participants",
-            //     select: "name avatar email",
+            const connectedSockets = Array.from(io.sockets.sockets.values())
+                .filter(s => data.participants.includes(s.data.userId));
 
-            // });
-
-            // get all connected sockets for other participants
-            const connectedSockets = Array.from(io.sockets.sockets.values()).filter(s => data.participants.includes(s.data.userId));
             connectedSockets.forEach((participantSocket) => {
                 participantSocket.join(conversation._id.toString());
-            })
+            });
 
+            const populatedConversation = await Conversation.findById(conversation._id)
+                .populate({
+                    path: "participants",
+                    select: "name avatar email",
+                }).lean();
 
-            //send the conversation data back populated
-            const populatedconversation = await Conversation.findById(conversation._id).populate({
-                path: "participants",
-                select: "name avatar email",
-            }).lean();
-            if (!populatedconversation) {
+            if (!populatedConversation) {
                 return socket.emit("newConversation", {
                     success: false,
-                    msg: "Failed to fetch conversation",
+                    msg: "Failed to fetch conversation after creation",
                 });
             }
+
             io.to(conversation._id.toString()).emit("newConversation", {
                 success: true,
                 msg: "Conversation created successfully",
-                data: populatedconversation,
+                data: populatedConversation,
             });
 
         } catch (error: any) {
-            console.log("newConversation error: ", error);
+            console.error("❌ newConversation error:", error.message, error);
             socket.emit("newConversation", {
                 success: false,
-                msg: "Failed to create conversation",
+                msg: error.message, // ✅ send actual error back for debugging
             });
         }
     });
