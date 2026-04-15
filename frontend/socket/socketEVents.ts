@@ -51,65 +51,49 @@ export const getContacts = (payload: any, off: boolean = false) => {
     }
 };
 
-// ✅ LISTEN
-export const onNewConversation = (callback: any) => {
+// ✅ NEW CONVERSATION
+export const newConversation = (payload: any, off: boolean = false) => {
     const socket = getSocket();
     if (!socket) return;
-
-    socket.on("newConversation", callback);
+    if (off) socket.off("newConversation", payload);
+    else if (typeof payload == "function") socket.on("newConversation", payload);
+    else socket.emit("newConversation", payload);
 };
 
-// ✅ REMOVE LISTENER
-export const offNewConversation = (callback: any) => {
+// Aliases for backward compatibility
+export const onNewConversation = (callback: any) => newConversation(callback);
+export const offNewConversation = (callback: any) => newConversation(callback, true);
+export const emitNewConversation = (data: any) => newConversation(data);
+
+// ✅ MESSAGES
+export const getMessages = (payload: any, off: boolean = false) => {
     const socket = getSocket();
     if (!socket) return;
-
-    socket.off("newConversation", callback);
+    if (off) socket.off("getMessages", payload);
+    else if (typeof payload == "function") socket.on("getMessages", payload);
+    else socket.emit("getMessages", payload);
 };
 
-// ✅ EMIT
-export const emitNewConversation = (data: any) => {
+export const sendMessage = (payload: any, off: boolean = false) => {
     const socket = getSocket();
-    if (!socket) {
-        console.log("Socket not connected");
-        return;
-    }
-
-    console.log("📤 Emitting:", data); // 🔥 IMPORTANT
-
-    socket.emit("newConversation", data);
+    if (!socket) return;
+    if (off) socket.off("sendMessage", payload);
+    else if (typeof payload == "function") socket.on("sendMessage", payload);
+    else socket.emit("sendMessage", payload);
 };
 
+export const newMessage = (payload: any, off: boolean = false) => {
+    const socket = getSocket();
+    if (!socket) return;
+    if (off) socket.off("newMessage", payload);
+    else if (typeof payload == "function") socket.on("newMessage", payload);
+    else socket.emit("newMessage", payload);
+};
 
-// export const getMessages = (payload: any, off: boolean = false) => {
-//     const socket = getSocket();
-//     if (!socket) return;
-//     if (off) socket.off("getMessages", payload);
-//     else if (typeof payload == "function") socket.on("getMessages", payload);
-//     else socket.emit("getMessages", payload);
-// };
-
-// export const sendMessage = (payload: any, off: boolean = false) => {
-//     const socket = getSocket();
-//     if (!socket) return;
-//     if (off) socket.off("sendMessage", payload);
-//     else if (typeof payload == "function") socket.on("sendMessage", payload);
-//     else socket.emit("sendMessage", payload);
-// };
-
-// export const newMessage = (payload: any, off: boolean = false) => {
-//     const socket = getSocket();
-//     console.log("newMessage", payload);
-//     if (!socket) return;
-//     if (off) socket.off("newMessage", payload);
-//     else if (typeof payload == "function") socket.on("newMessage", payload);
-//     else socket.emit("newMessage", payload);
-// };
-
-// export const getConversations = (payload: any, off: boolean = false) => {
-//     const socket = getSocket();
-//     if (!socket) return;
-//     if (off) socket.off("getConversations", payload);
-//     else if (typeof payload == "function") socket.on("getConversations", payload);
-//     else socket.emit("getConversations", payload);
-// };
+export const getConversations = (payload: any, off: boolean = false) => {
+    const socket = getSocket();
+    if (!socket) return;
+    if (off) socket.off("getConversations", payload);
+    else if (typeof payload == "function") socket.on("getConversations", payload);
+    else socket.emit("getConversations", payload);
+};

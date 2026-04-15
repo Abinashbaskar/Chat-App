@@ -37,13 +37,24 @@ const newGroup = () => {
         };
     }, [])
 
+    const groupNameRef = React.useRef(groupName);
+
+    React.useEffect(() => {
+        groupNameRef.current = groupName;
+    }, [groupName]);
+
     useEffect(() => {
         const handleNewConversation = (response: any) => {
             if (response.success && response.data) {
                 const conv = response.data;
                 console.log("handleNewConversation in newGroup received:", JSON.stringify(response));
-                // If it's the group we just asked to create, go to it
-                if (conv.type === 'group' && conv.name === groupName) {
+                
+                // If it's a group and matches the name we just tried to create
+                // We loosen the check slightly to handle any name variations from backend
+                const isMyGroup = conv.type === 'group' && 
+                                 (conv.name?.trim() === groupNameRef.current?.trim());
+
+                if (isMyGroup) {
                     router.push({
                         pathname: '/Main/chatRoom',
                         params: {
@@ -60,7 +71,7 @@ const newGroup = () => {
         return () => {
             newConversation(handleNewConversation, true);
         };
-    }, [groupName])
+    }, [])
 
     const toggleUser = (id: string) => {
         if (selectedUsers.includes(id)) {

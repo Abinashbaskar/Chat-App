@@ -38,6 +38,12 @@ export function registerChatEvents(io: SocketIOServer, socket: Socket) {
                 }
             }
 
+            console.log("🛠️ Creating Conversation:", {
+                type: data.type,
+                name: data.name,
+                participantCount: participantIds.length
+            });
+
             const conversation = await Conversation.create({
                 type: data.type,
                 participants: participantIds, // ✅ use cast IDs
