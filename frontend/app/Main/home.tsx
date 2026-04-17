@@ -3,11 +3,11 @@ import ScreenWrapper from '@/components/ScreenWrapper'
 import Typo from '@/components/Typo'
 import { colors, radius, spacingX, spacingY } from '@/constants/theme'
 import { useAuth } from '@/context/authContext'
+import { getConversations } from '@/socket/socketEVents'
 import { useRouter } from 'expo-router'
 import { GearSix, Plus } from 'phosphor-react-native'
 import React, { useEffect, useState } from 'react'
 import { FlatList, StyleSheet, TouchableOpacity, View } from 'react-native'
-// import { getConversations } from '@/socket/socketEVents'
 
 const home = () => {
     const { user } = useAuth()
@@ -17,7 +17,7 @@ const home = () => {
 
     useEffect(() => {
         const handleConversations = (response: any) => {
-            // console.log("Conversations fetched: ", response);
+            console.log("Conversations fetched: ", response);
             if (response.success) {
                 // Analysis of the conversation data for the frontend
                 const parsedConversations = response.conversations.map((c: any) => {
@@ -48,12 +48,12 @@ const home = () => {
         };
 
         if (user) {
-            // getConversations(handleConversations);
-            // getConversations({}); // emit to trigger the backed logic to send
+            getConversations(handleConversations);
+            getConversations({}); // emit to trigger the backed logic to send
         }
 
         return () => {
-            // getConversations(handleConversations, true);
+            getConversations(handleConversations, true);
         };
     }, [user])
 

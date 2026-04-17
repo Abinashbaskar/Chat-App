@@ -4,6 +4,60 @@ import Message from "../models/Message.js";
 import { Types } from "mongoose";
 
 export function registerChatEvents(io: SocketIOServer, socket: Socket) {
+
+    socket.on("getConversation", async (data: any) => {
+        try {
+            const userId = socket.data.userId;
+            const { conversationId } = data;
+
+            if (!userId) {
+                return socket.emit("getConversation", {
+                    success: false,
+                    msg: "Unauthorized"
+                });
+            }
+
+            if (!conversationId) {
+                return socket.emit("getConversation", {
+                    success: false,
+                    msg: "Conversation ID is required"
+                });
+            }
+
+            const conversation = await Conversation.findOne({
+                _id: conversationId,
+                participants: userId
+            })
+                .populate({
+                    path: "participants",
+                    select: "name avatar email",
+                })
+                .sort({ updatedAt: -1 })
+                .populate({
+                    path: "lastMessage",
+                    select: "content senderId attachment createdAt",
+                });
+
+            if (!conversation) {
+                return socket.emit("getConversation", {
+                    success: false,
+                    msg: "Conversation not found or access denied"
+                });
+            }
+
+            socket.emit("getConversation", {
+                success: true,
+                data: conversation
+            });
+
+        } catch (error: any) {
+            console.error("getConversation error:", error);
+            socket.emit("getConversation", {
+                success: false,
+                msg: "Failed to fetch conversation"
+            });
+        }
+    });
     socket.on("newConversation", async (data: any) => {
         try {
             console.log("🔥 EVENT RECEIVED:", data);
@@ -13,6 +67,13 @@ export function registerChatEvents(io: SocketIOServer, socket: Socket) {
                 return socket.emit("newConversation", {
                     success: false,
                     msg: "Unauthorized",
+                });
+            }
+
+            if (!data.participants || !Array.isArray(data.participants)) {
+                return socket.emit("newConversation", {
+                    success: false,
+                    msg: "Participants are required",
                 });
             }
 
@@ -119,7 +180,20 @@ export function registerChatEvents(io: SocketIOServer, socket: Socket) {
     socket.on("sendMessage", async (data: any) => {
         try {
             const { conversationId, content, attachment } = data;
-            if (!conversationId || (!content && !attachment)) return;
+
+            if (!conversationId) {
+                return socket.emit("sendMessage", {
+                    success: false,
+                    msg: "Conversation ID is required"
+                });
+            }
+
+            if (!content && !attachment) {
+                return socket.emit("sendMessage", {
+                    success: false,
+                    msg: "Message content or attachment is required"
+                });
+            }
 
             const message = await Message.create({
                 conversationId,
@@ -156,7 +230,13 @@ export function registerChatEvents(io: SocketIOServer, socket: Socket) {
     socket.on("getMessages", async (data: any) => {
         try {
             const { conversationId, limit = 50, skip = 0 } = data;
-            if (!conversationId) return;
+
+            if (!conversationId) {
+                return socket.emit("getMessages", {
+                    success: false,
+                    msg: "Conversation ID is required"
+                });
+            }
 
             const messages = await Message.find({ conversationId })
                 .populate({

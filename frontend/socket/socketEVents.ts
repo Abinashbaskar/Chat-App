@@ -89,11 +89,36 @@ export const newMessage = (payload: any, off: boolean = false) => {
     else if (typeof payload == "function") socket.on("newMessage", payload);
     else socket.emit("newMessage", payload);
 };
-
 export const getConversations = (payload: any, off: boolean = false) => {
     const socket = getSocket();
-    if (!socket) return;
-    if (off) socket.off("getConversations", payload);
-    else if (typeof payload == "function") socket.on("getConversations", payload);
-    else socket.emit("getConversations", payload);
-};
+    if (!socket) {
+        console.log("Socket is not connected");
+        return;
+    }
+
+    if (off) {
+        // turn off listing to this event
+        socket.off("getConversations", payload); // payload is the callback
+    } else if (typeof payload == "function") {
+        socket.on("getConversations", payload); // payload as callback for this
+    } else {
+        socket.emit("getConversations", payload); // sending payload as data
+    }
+};
+
+export const getConversation = (payload: any, off: boolean = false) => {
+    const socket = getSocket();
+    if (!socket) {
+        console.log("Socket is not connected");
+        return;
+    }
+
+    if (off) {
+        // turn off listing to this event
+        socket.off("getConversation", payload); // payload is the callback
+    } else if (typeof payload == "function") {
+        socket.on("getConversation", payload); // payload as callback for this
+    } else {
+        socket.emit("getConversation", payload); // sending payload as data
+    }
+};
