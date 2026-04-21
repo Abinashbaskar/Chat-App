@@ -6,7 +6,7 @@ import { getMessages, newConversation, newMessage, sendMessage as sendSocketMess
 import { getFullImageUri } from '@/Utils/Common'
 import { scale, verticalScale } from '@/Utils/Styling'
 import { router, useLocalSearchParams } from 'expo-router'
-import { CaretLeft, DotsThreeVertical, PaperPlaneRight, User } from 'phosphor-react-native'
+import { CaretLeft, DotsThreeVertical, PaperPlaneRight, Plus, User } from 'phosphor-react-native'
 import React, { useEffect, useRef, useState } from 'react'
 import {
     FlatList,
@@ -189,22 +189,29 @@ export default function ChatRoom() {
                 {/* ✅ FIX 5: paddingBottom accounts for safe area on notched devices */}
                 <View style={[styles.inputContainer /* , { paddingBottom: insets.bottom || spacingY._10 } */]}>
                     <View style={styles.textInputWrapper}>
+                        <TouchableOpacity style={styles.attachButton}>
+                            <Plus size={scale(20)} color={colors.black} weight="bold" />
+                        </TouchableOpacity>
+
                         <TextInput
                             style={styles.textInput}
-                            placeholder="Type message..."
+                            placeholder="Type message"
                             placeholderTextColor={colors.neutral400}
                             multiline
                             value={text}
                             onChangeText={setText}
                         />
+
+                        <View style={styles.verticalSeparator} />
+
                         <TouchableOpacity
                             style={[styles.sendButton, !text.trim() && styles.sendButtonDisabled]}
                             onPress={handleSend}
                             disabled={!text.trim()}
                         >
                             <PaperPlaneRight
-                                size={scale(20)}
-                                color={text.trim() ? colors.primary : colors.neutral300}
+                                size={scale(18)}
+                                color={colors.black}
                                 weight="fill"
                             />
                         </TouchableOpacity>
@@ -325,27 +332,42 @@ const styles = StyleSheet.create({
     textInputWrapper: {
         flex: 1,
         backgroundColor: colors.neutral100,
-        borderRadius: radius._20,
-        paddingHorizontal: spacingX._15,
-        paddingRight: spacingX._5, // ✅ tighter right to hug the send button
+        borderRadius: radius.full,
+        paddingHorizontal: spacingX._5,
+        paddingVertical: spacingY._5,
         flexDirection: 'row',
         alignItems: 'center',
-        minHeight: verticalScale(44),
+        minHeight: verticalScale(50),
+    },
+    attachButton: {
+        width: scale(36),
+        height: scale(36),
+        borderRadius: radius.full,
+        backgroundColor: colors.primary,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: spacingX._10,
     },
     textInput: {
         flex: 1,
         fontSize: scale(14),
         color: colors.neutral900,
         maxHeight: verticalScale(100),
-        paddingVertical: Platform.OS === 'ios' ? spacingY._10 : spacingY._10,
+        paddingVertical: Platform.OS === 'ios' ? spacingY._5 : spacingY._5,
+    },
+    verticalSeparator: {
+        width: 1,
+        height: scale(24),
+        backgroundColor: colors.neutral300,
+        marginHorizontal: spacingX._10,
     },
     sendButton: {
-        width: scale(32),
-        height: scale(32),
+        width: scale(36),
+        height: scale(36),
         borderRadius: radius.full,
+        backgroundColor: colors.primary,
         justifyContent: 'center',
         alignItems: 'center',
-        marginLeft: spacingX._5,
     },
     sendButtonDisabled: {
         opacity: 0.4,
