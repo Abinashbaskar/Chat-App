@@ -96,10 +96,10 @@ export default function ChatRoom() {
     }
 
     const renderItem = ({ item }: { item: any }) => {
-        const isMy =
-            item.senderId?._id === (currentUser as any)?._id ||
-            item.senderId === (currentUser as any)?._id ||
-            item.senderId?.id === (currentUser as any)?.id;
+        const currentUserId = currentUser?._id || currentUser?.id;
+        const senderId = item.senderId?._id || item.senderId?.id || item.senderId;
+
+        const isMy = senderId && currentUserId && senderId === currentUserId;
 
         const timeStr = item.createdAt
             ? new Date(item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })

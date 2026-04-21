@@ -21,6 +21,7 @@ export type TypoProps = {
 };
 
 export interface UserProps {
+    _id?: string;
     email: string;
     name: string;
     avatar?: string | null;

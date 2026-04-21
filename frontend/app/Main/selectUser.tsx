@@ -30,7 +30,6 @@ const selectUser = () => {
             }
         };
 
-        // ✅ Register listener FIRST, then emit to request contacts
         getContacts(handleContacts);        // registers the "on" listener
         getContacts({});                    // emits to trigger server response (empty payload is fine)
         onNewConversation(processsNewConversation);
