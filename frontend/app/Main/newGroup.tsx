@@ -5,17 +5,35 @@ import { colors, radius, spacingX, spacingY } from '@/constants/theme'
 import { useAuth } from '@/context/authContext'
 import { getContacts, newConversation } from '@/socket/socketEVents'
 import { scale } from '@/Utils/Styling'
+import { Alerts } from '@/Utils/Alerts'
 import { useRouter } from 'expo-router'
+import * as ImagePicker from 'expo-image-picker'
 import { Camera, CaretLeft } from 'phosphor-react-native'
 import React, { useEffect, useState } from 'react'
-import { FlatList, Platform, StatusBar, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native'
+import { FlatList, Platform, StatusBar, StyleSheet, TextInput, TouchableOpacity, View, Image } from 'react-native'
 
 const newGroup = () => {
     const router = useRouter()
     const { user: currentUser } = useAuth()
     const [groupName, setGroupName] = useState('')
+    const [groupImage, setGroupImage] = useState<string | null>(null)
     const [selectedUsers, setSelectedUsers] = useState<string[]>([])
     const [users, setUsers] = useState<any[]>([])
+
+    const pickImage = async () => {
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ['images'],
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 0.5,
+            base64: true,
+        });
+
+        if (!result.canceled && result.assets && result.assets.length > 0) {
+            const base64Img = `data:image/jpeg;base64,${result.assets[0].base64}`;
+            setGroupImage(base64Img);
+        }
+    };
 
     useEffect(() => {
         const handleContacts = (response: any) => {
@@ -55,14 +73,10 @@ const newGroup = () => {
                                  (conv.name?.trim() === groupNameRef.current?.trim());
 
                 if (isMyGroup) {
-                    router.push({
-                        pathname: '/Main/chatRoom',
-                        params: {
-                            conversationId: conv._id,
-                            name: conv.name,
-                            image: conv.avatar || '',
-                        }
-                    });
+                    Alerts.success("Success", "Group created successfully!");
+                    setTimeout(() => {
+                        router.back();
+                    }, 500);
                 }
             }
         };
@@ -88,6 +102,7 @@ const newGroup = () => {
         newConversation({
             type: "group",
             name: groupName,
+            avatar: groupImage,
             participants: [currentUserId, ...selectedUsers],
         });
     }
@@ -113,9 +128,13 @@ const newGroup = () => {
             <View style={styles.content}>
                 {/* Group Info Section */}
                 <View style={styles.groupInfoContainer}>
-                    <TouchableOpacity style={styles.cameraButton}>
+                    <TouchableOpacity style={styles.cameraButton} onPress={pickImage}>
                         <View style={styles.cameraIconContainer}>
-                            <Camera size={scale(30)} color={colors.neutral500} weight="fill" />
+                            {groupImage ? (
+                                <Image source={{ uri: groupImage }} style={styles.groupImage} />
+                            ) : (
+                                <Camera size={scale(30)} color={colors.neutral500} weight="fill" />
+                            )}
                         </View>
                     </TouchableOpacity>
 
@@ -192,6 +211,11 @@ const styles = StyleSheet.create({
         borderStyle: "dashed",
         justifyContent: "center",
         alignItems: "center",
+    },
+    groupImage: {
+        width: '100%',
+        height: '100%',
+        borderRadius: radius.full,
     },
     inputContainer: {
         flex: 1,

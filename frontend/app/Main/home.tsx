@@ -3,7 +3,7 @@ import ScreenWrapper from '@/components/ScreenWrapper'
 import Typo from '@/components/Typo'
 import { colors, radius, spacingX, spacingY } from '@/constants/theme'
 import { useAuth } from '@/context/authContext'
-import { getConversations } from '@/socket/socketEVents'
+import { getConversations, newConversation, newMessage } from '@/socket/socketEVents'
 import { useRouter } from 'expo-router'
 import { GearSix, Plus } from 'phosphor-react-native'
 import React, { useEffect, useState } from 'react'
@@ -47,13 +47,72 @@ const home = () => {
             }
         };
 
+        const handleNewConversation = (response: any) => {
+            if (response.success && response.data) {
+                const c = response.data;
+                let name = c.name;
+                let image = c.avatar;
+
+                if (c.type === "direct") {
+                    const currentUserId = user?.id || (user as any)?._id;
+                    const otherParticipant = c.participants?.find((p: any) => p._id !== currentUserId && p.id !== currentUserId);
+                    if (otherParticipant) {
+                        name = otherParticipant.name;
+                        image = otherParticipant.avatar;
+                    }
+                }
+
+                const parsed = {
+                    ...c,
+                    name,
+                    image,
+                    lastMessage: c.lastMessage ? {
+                        ...c.lastMessage,
+                        text: c.lastMessage.content || c.lastMessage.text || (c.lastMessage.attachment ? "Sent an attachment" : "")
+                    } : null
+                };
+
+                setConversations(prev => {
+                    const exists = prev.find(conv => (conv._id || conv.id) === (parsed._id || parsed.id));
+                    if (exists) return prev;
+                    return [parsed, ...prev];
+                });
+            }
+        };
+
+        const handleNewMessage = (response: any) => {
+            if (response.success && response.message) {
+                const msg = response.message;
+                setConversations(prev => {
+                    return prev.map(conv => {
+                        const convId = conv._id || conv.id;
+                        const msgConvId = msg.conversationId?._id || msg.conversationId?.id || msg.conversationId;
+                        if (convId === msgConvId) {
+                            return {
+                                ...conv,
+                                lastMessage: {
+                                    ...msg,
+                                    text: msg.content || msg.text || (msg.attachment ? "Sent an attachment" : "")
+                                }
+                            };
+                        }
+                        return conv;
+                    });
+                });
+            }
+        };
+
         if (user) {
             getConversations(handleConversations);
+            newConversation(handleNewConversation);
+            newMessage(handleNewMessage);
             getConversations({}); // emit to trigger the backed logic to send
         }
 
         return () => {
             getConversations(handleConversations, true);
+            newConversation(handleNewConversation, true);
+            newMessage(handleNewMessage, true);
         };
     }, [user])
 
