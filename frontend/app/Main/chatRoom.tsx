@@ -197,7 +197,6 @@ export default function ChatRoom() {
                             value={text}
                             onChangeText={setText}
                         />
-                        {/* ✅ FIX 6: Send button always visible but dimmed when empty, for better UX */}
                         <TouchableOpacity
                             style={[styles.sendButton, !text.trim() && styles.sendButtonDisabled]}
                             onPress={handleSend}

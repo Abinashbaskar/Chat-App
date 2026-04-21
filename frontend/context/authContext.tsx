@@ -50,8 +50,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                         setUser(decodedToken.user);
                     }
                     
-                    // Connect socket in background
-                    connectSocket().catch(err => console.log("Socket background connection error:", err.message));
+                    // Connect socket and wait for it
+                    try {
+                        await connectSocket();
+                    } catch (err: any) {
+                        console.log("Socket background connection error:", err.message);
+                    }
                 }
             }
         } catch (error) {
@@ -112,8 +116,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const response = await login(email, password);
         await updateToken(response.token);
 
-        // Connect socket in background
-        connectSocket().catch(err => console.log("Socket connection error after sign-in:", err.message));
+        // Connect socket before navigating
+        try {
+            await connectSocket();
+        } catch (err: any) {
+            console.log("Socket connection error after sign-in:", err.message);
+        }
 
         router.replace("/Main/home");
     };
@@ -121,8 +129,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const response = await register(name, email, password, avatar);
         await updateToken(response.token);
 
-        // Connect socket in background
-        connectSocket().catch(err => console.log("Socket connection error after sign-up:", err.message));
+        // Connect socket before navigating
+        try {
+            await connectSocket();
+        } catch (err: any) {
+            console.log("Socket connection error after sign-up:", err.message);
+        }
 
         router.replace("/Main/home");
     };
